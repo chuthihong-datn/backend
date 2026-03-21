@@ -8,38 +8,27 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name = "store_settings")
+@Table(name = "carts")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class StoreSetting {
-
+public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "setting_id")
-    private Integer settingId;
+    private BigInteger cartId;
 
-    private String name;
-    
-    @Column(name = "logo_url")
-    private String logoUrl;
+    @OneToOne
+    @JoinColumn(name = "account_id", nullable = false, unique = true)
+    private Account account;
 
-    @Column(name = "banner_url")
-    private String bannerUrl;
-
-    @Column(name = "open_time")
-    private String openTime;
-
-    @Column(name = "close_time")
-    private String closeTime;
-
-    private String hotline;
-    private String email;
-    private String address;
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems;
 
     @CreationTimestamp
     @Column(name = "created_at")

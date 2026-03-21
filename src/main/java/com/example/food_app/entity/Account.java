@@ -35,6 +35,7 @@ public class Account {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(name = "is_active")
     private Boolean isActive = true;
 
     private String avtUrl;
@@ -47,11 +48,4 @@ public class Account {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "account_permissions",
-            joinColumns = @JoinColumn(name = "account_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id")
-    )
-    private Set<Permission> permissions;
 }

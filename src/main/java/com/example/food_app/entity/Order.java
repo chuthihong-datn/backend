@@ -32,10 +32,6 @@ public class Order {
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "district_id")
-    private District district;
-
-    @ManyToOne
     @JoinColumn(name = "ward_id")
     private Ward ward;
 

@@ -13,10 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MenuResponse {
+public class MenuHotResponse {
     private BigInteger id;
     private String name;
     private List<String> images;
     private float rating;
     private BigDecimal minPrice;
+    private Long totalSold;
 }

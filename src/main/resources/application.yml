@@ -7,7 +7,7 @@ spring:
   application:
     name: food-app
   datasource:
-    url: jdbc:mysql://localhost:3306/food_db?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/food_db1?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -22,4 +22,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
+cloudinary:
+  cloud_name: ddtccmifs
+  api_key: 212823853812327
+  api_secret: uAMCw3yDov8yGs6TMwZ1fdKf83U

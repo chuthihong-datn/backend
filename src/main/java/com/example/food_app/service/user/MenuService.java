@@ -6,6 +6,7 @@ import com.example.food_app.entity.MenuSize;
 import com.example.food_app.entity.Review;
 import com.example.food_app.repository.CategoryRepository;
 import com.example.food_app.repository.MenuRepository;
+import com.example.food_app.repository.OrderDetailRepository;
 import com.example.food_app.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,6 +27,8 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final CategoryRepository categoryRepository;
     private final ReviewRepository reviewRepository;
+    private final OrderDetailRepository orderDetailRepository;
+
     //danh sách tất cả menu
     public List<MenuResponse> getListMenu() {
 
@@ -36,7 +41,6 @@ public class MenuService {
                         .id(menu.getMenuId())
                         .name(menu.getName())
                         .images(menu.getImages())
-                        .prepareTime(menu.getPrepareTime())
                         .minPrice(calculateMinPrice(menu))
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .build())
@@ -78,7 +82,6 @@ public class MenuService {
                         .id(menu.getMenuId())
                         .name(menu.getName())
                         .images(menu.getImages())
-                        .prepareTime(menu.getPrepareTime())
                         .minPrice(calculateMinPrice(menu))
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .build())
@@ -135,7 +138,6 @@ public class MenuService {
                 .name(menu.getName())
                 .description(menu.getDescription())
                 .images(menu.getImages())
-                .prepareTime(menu.getPrepareTime())
                 .amount(menu.getAmount())
                 .minPrice(calculateMinPrice(menu))
                 .sizes(sizeResponses)
@@ -163,4 +165,56 @@ public class MenuService {
                         )
                 ));
     }
+
+    //tìm kiếm
+    public List<MenuResponse> searchMenus(String keyword){
+
+        List<Menu> menus = menuRepository
+                .findByNameContainingIgnoreCaseAndIsActiveTrue(keyword);
+
+        Map<BigInteger, Float> ratingMap = buildRatingMap(menus);
+
+        return menus.stream()
+                .map(menu -> MenuResponse.builder()
+                        .id(menu.getMenuId())
+                        .name(menu.getName())
+                        .images(menu.getImages())
+                        .minPrice(calculateMinPrice(menu))
+                        .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
+                        .build())
+                .toList();
+    }
+
+    //danh sách 10 menu hot nhất
+    public List<MenuHotResponse> getTopSellingMenus() {
+        List<Object[]> salesData = orderDetailRepository.findTotalSoldByMenu();
+
+        Map<BigInteger, Long> totalSoldMap = salesData.stream()
+                .collect(Collectors.toMap(
+                        obj -> (BigInteger) obj[0], // menuId
+                        obj -> ((Number) obj[1]).longValue() // totalSold
+                ));
+
+        List<Menu> menus = menuRepository.findAllByMenuIdInAndIsActiveTrue(
+                new ArrayList<>(totalSoldMap.keySet())
+        );
+
+        Map<BigInteger, Float> ratingMap = buildRatingMap(menus);
+
+        return menus.stream()
+                .map(menu -> MenuHotResponse.builder()
+                        .id(menu.getMenuId())
+                        .name(menu.getName())
+                        .images(menu.getImages())
+                        .minPrice(calculateMinPrice(menu))
+                        .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
+                        .totalSold(totalSoldMap.getOrDefault(menu.getMenuId(), 0L))
+                        .build()
+                )
+
+                .sorted(Comparator.comparing(MenuHotResponse::getTotalSold).reversed())
+                .limit(10)
+                .toList();
+    }
+
 }

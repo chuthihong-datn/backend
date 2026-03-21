@@ -21,7 +21,6 @@ public class MenuDetailResponse {
     private List<String> images;
 
     private BigDecimal minPrice;
-    private Integer prepareTime;
     private Integer amount;
 
     private List<MenuSizeResponse> sizes;

@@ -13,17 +13,17 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "vouchers")
+@Table(name = "promotions")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Voucher {
+public class Promotion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "voucher_id")
-    private BigInteger voucherId;
+    @Column(name = "promotion_id")
+    private BigInteger promotionId;
 
     @Column(unique = true)
     private String code;

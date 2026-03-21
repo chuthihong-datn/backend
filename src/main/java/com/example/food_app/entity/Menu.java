@@ -45,9 +45,6 @@ public class Menu {
     @Column(name = "base_price")
     private BigDecimal basePrice;
 
-    @Column(name = "prepare_time")
-    private Integer prepareTime;
-
     private Integer amount;
 
     @Column(name = "is_active")

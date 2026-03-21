@@ -1,13 +1,12 @@
 package com.example.food_app.controller.user;
 
 import com.example.food_app.dto.response.user.MenuDetailResponse;
+import com.example.food_app.dto.response.user.MenuHotResponse;
 import com.example.food_app.dto.response.user.MenuResponse;
 import com.example.food_app.service.user.MenuService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -31,5 +30,17 @@ public class MenuController {
     @GetMapping("/{id}")
     public MenuDetailResponse getMenuDetail(@PathVariable BigInteger id){
         return menuService.getMenuDetail(id);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MenuResponse>> searchMenu(
+            @RequestParam String keyword) {
+
+        return ResponseEntity.ok(menuService.searchMenus(keyword));
+    }
+
+    @GetMapping("/hot")
+    public ResponseEntity<List<MenuHotResponse>> getTopHotMenus() {
+        return ResponseEntity.ok(menuService.getTopSellingMenus());
     }
 }

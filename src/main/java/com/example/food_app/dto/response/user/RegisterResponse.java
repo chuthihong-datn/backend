@@ -1,4 +1,4 @@
-package com.example.food_app.dto.request.user;
+package com.example.food_app.dto.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LoginRequest {
-    private String email;
-    private String password;
+public class RegisterResponse {
+    private boolean success;
+    private String message;
 }

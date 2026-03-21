@@ -13,4 +13,6 @@ public interface MenuRepository extends JpaRepository<Menu, BigInteger> {
     List<Menu> findAllByIsActiveIsTrue();
     List<Menu> findByCategory_CategoryIdAndIsActiveTrue(BigInteger categoryId);
     Optional<Menu> findByMenuIdAndIsActiveTrue(BigInteger id);
+    List<Menu> findByNameContainingIgnoreCaseAndIsActiveTrue(String keyword);
+    List<Menu> findAllByMenuIdInAndIsActiveTrue(List<BigInteger> menuIds);
 }

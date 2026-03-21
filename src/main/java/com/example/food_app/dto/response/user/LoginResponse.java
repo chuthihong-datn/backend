@@ -1,22 +1,21 @@
 package com.example.food_app.dto.response.user;
 
+import com.example.food_app.entity.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MenuResponse {
+public class LoginResponse {
     private BigInteger id;
-    private String name;
-    private List<String> images;
-    private float rating;
-    private BigDecimal minPrice;
+    private String fullName;
+    private String token;
+    private String email;
+    private Role role;
 }
