@@ -44,12 +44,4 @@ public class CartItem {
             inverseJoinColumns = @JoinColumn(name = "topping_id")
     )
     private List<Topping> toppings;
-
-    @CreationTimestamp
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

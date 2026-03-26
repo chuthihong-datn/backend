@@ -1,6 +1,7 @@
 package com.example.food_app.security;
 
 import com.example.food_app.entity.enums.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -27,21 +28,25 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
+    private Claims getClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(SECRET_KEY.getBytes())
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
+    }
+
+    public String getEmailFromToken(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public String getRoleFromToken(String token) {
+        return getClaims(token).get("role", String.class);
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY.getBytes())
-                    .build()
-                    .parseClaimsJws(token);
+            getClaims(token);
             return true;
         } catch (Exception e) {
             return false;

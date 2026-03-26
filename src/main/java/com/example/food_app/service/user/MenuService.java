@@ -42,6 +42,7 @@ public class MenuService {
                         .name(menu.getName())
                         .images(menu.getImages())
                         .minPrice(calculateMinPrice(menu))
+                        .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .build())
                 .toList();
@@ -69,7 +70,7 @@ public class MenuService {
     public List<MenuResponse> getMenusByCategory(BigInteger categoryId){
 
         if(!categoryRepository.existsByCategoryIdAndIsActiveIsTrue(categoryId)){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category không tồn tại");
         }
 
         List<Menu> menus =
@@ -83,6 +84,7 @@ public class MenuService {
                         .name(menu.getName())
                         .images(menu.getImages())
                         .minPrice(calculateMinPrice(menu))
+                        .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .build())
                 .toList();
@@ -93,7 +95,7 @@ public class MenuService {
 
         Menu menu = menuRepository.findByMenuIdAndIsActiveTrue(menuId)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Menu not found"
+                        HttpStatus.NOT_FOUND, "Menu không tồn tại"
                 ));
 
         List<MenuSizeResponse> sizeResponses =
@@ -207,6 +209,7 @@ public class MenuService {
                         .name(menu.getName())
                         .images(menu.getImages())
                         .minPrice(calculateMinPrice(menu))
+                        .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .totalSold(totalSoldMap.getOrDefault(menu.getMenuId(), 0L))
                         .build()

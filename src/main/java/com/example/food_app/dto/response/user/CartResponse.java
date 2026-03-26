@@ -6,19 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MenuHotResponse {
-    private BigInteger id;
-    private String name;
-    private List<String> images;
-    private float rating;
-    private BigDecimal minPrice;
-    private Integer amount;
-    private Long totalSold;
+public class CartResponse {
+    private List<CartItemResponse> items;
+    private BigDecimal totalAmount;
 }

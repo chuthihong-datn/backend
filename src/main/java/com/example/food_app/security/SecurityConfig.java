@@ -27,7 +27,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**",
                                 "/categories/**",
-                                "/menus/**"
+                                "/menus/**",
+                                "/cart/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

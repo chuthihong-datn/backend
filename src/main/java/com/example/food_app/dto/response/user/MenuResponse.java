@@ -19,4 +19,5 @@ public class MenuResponse {
     private List<String> images;
     private float rating;
     private BigDecimal minPrice;
+    private Integer amount;
 }
