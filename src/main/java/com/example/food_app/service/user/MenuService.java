@@ -4,10 +4,7 @@ import com.example.food_app.dto.response.user.*;
 import com.example.food_app.entity.Menu;
 import com.example.food_app.entity.MenuSize;
 import com.example.food_app.entity.Review;
-import com.example.food_app.repository.CategoryRepository;
-import com.example.food_app.repository.MenuRepository;
-import com.example.food_app.repository.OrderDetailRepository;
-import com.example.food_app.repository.ReviewRepository;
+import com.example.food_app.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,6 +25,7 @@ public class MenuService {
     private final CategoryRepository categoryRepository;
     private final ReviewRepository reviewRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final ToppingRepository toppingRepository;
 
     //danh sách tất cả menu
     public List<MenuResponse> getListMenu() {
@@ -44,6 +42,7 @@ public class MenuService {
                         .minPrice(calculateMinPrice(menu))
                         .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
+                        .outOfStock(menu.isOutOfStock())
                         .build())
                 .toList();
     }
@@ -86,6 +85,7 @@ public class MenuService {
                         .minPrice(calculateMinPrice(menu))
                         .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
+                        .outOfStock(menu.isOutOfStock())
                         .build())
                 .toList();
     }
@@ -109,14 +109,14 @@ public class MenuService {
                                 .toList();
 
         List<ToppingResponse> toppingResponses =
-                menu.getToppings() == null ? List.of() :
-                        menu.getToppings().stream()
-                                .map(t -> ToppingResponse.builder()
-                                        .id(t.getToppingId())
-                                        .name(t.getName())
-                                        .price(t.getPrice())
-                                        .build())
-                                .toList();
+                toppingRepository.findAvailableToppingsByMenuId(menu.getMenuId())
+                        .stream()
+                        .map(t -> ToppingResponse.builder()
+                                .id(t.getToppingId())
+                                .name(t.getName())
+                                .price(t.getPrice())
+                                .build())
+                        .toList();
 
         List<Review> reviews = reviewRepository.findByMenu_MenuId(menuId);
         List<ReviewResponse> reviewResponses = reviews.stream()
@@ -183,6 +183,7 @@ public class MenuService {
                         .images(menu.getImages())
                         .minPrice(calculateMinPrice(menu))
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
+                        .outOfStock(menu.isOutOfStock())
                         .build())
                 .toList();
     }
@@ -212,6 +213,7 @@ public class MenuService {
                         .amount(menu.getAmount())
                         .rating(ratingMap.getOrDefault(menu.getMenuId(), 0f))
                         .totalSold(totalSoldMap.getOrDefault(menu.getMenuId(), 0L))
+                        .outOfStock(menu.isOutOfStock())
                         .build()
                 )
 

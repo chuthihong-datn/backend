@@ -20,4 +20,5 @@ public class MenuResponse {
     private float rating;
     private BigDecimal minPrice;
     private Integer amount;
+    private boolean outOfStock;
 }

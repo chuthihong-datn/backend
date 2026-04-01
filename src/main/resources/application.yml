@@ -26,3 +26,9 @@ cloudinary:
   cloud_name: ddtccmifs
   api_key: 212823853812327
   api_secret: uAMCw3yDov8yGs6TMwZ1fdKf83U
+
+vnpay:
+  tmnCode: DDD57SWE
+  hashSecret: 6YL9SHTA5OZSEPGCEI07VT3N0NXX49N1
+  payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnUrl: http://localhost:8080/api/payment/vnpay-return

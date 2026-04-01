@@ -1,5 +1,6 @@
 package com.example.food_app.repository;
 
+import com.example.food_app.entity.Order;
 import com.example.food_app.entity.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,4 +13,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, BigInt
             "FROM OrderDetail od " +
             "GROUP BY od.menu.menuId")
     List<Object[]> findTotalSoldByMenu();
+
+    List<OrderDetail> findByOrder(Order order);
 }

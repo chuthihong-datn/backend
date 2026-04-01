@@ -54,6 +54,7 @@ public class AuthService {
                     .id(account.getAccountId())
                     .fullName(account.getFullName())
                     .token(token)
+                    .phone(account.getPhone())
                     .email(account.getEmail())
                     .role(account.getRole())
                     .build();

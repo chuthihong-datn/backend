@@ -28,7 +28,8 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/categories/**",
                                 "/menus/**",
-                                "/cart/**"
+                                "/cart/**",
+                                "/wards/delivery"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

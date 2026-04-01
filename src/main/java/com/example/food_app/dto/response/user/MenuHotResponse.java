@@ -21,4 +21,5 @@ public class MenuHotResponse {
     private BigDecimal minPrice;
     private Integer amount;
     private Long totalSold;
+    private boolean outOfStock;
 }

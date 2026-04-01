@@ -36,4 +36,7 @@ public class Topping {
 
     @ManyToMany(mappedBy = "toppings")
     private Set<Menu> menus = new HashSet<>();
+
+    @Column(name = "out_of_stock")
+    private boolean outOfStock = false;
 }

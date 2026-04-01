@@ -68,4 +68,7 @@ public class Menu {
 
     @OneToMany(mappedBy = "menu")
     private List<MenuSize> sizes;
+
+    @Column(name = "out_of_stock")
+    private boolean outOfStock = false;
 }
