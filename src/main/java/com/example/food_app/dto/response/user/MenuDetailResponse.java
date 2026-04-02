@@ -29,4 +29,6 @@ public class MenuDetailResponse {
     private Float rating;
     private Integer reviewCount;
     private List<ReviewResponse> reviews;
+
+    private boolean outOfStock;
 }

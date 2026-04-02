@@ -147,6 +147,7 @@ public class MenuService {
                 .rating(avgRating)
                 .reviewCount(reviewResponses.size())
                 .reviews(reviewResponses)
+                .outOfStock(menu.isOutOfStock())
                 .build();
     }
 
