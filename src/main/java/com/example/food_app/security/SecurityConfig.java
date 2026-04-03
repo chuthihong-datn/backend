@@ -16,21 +16,31 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .cors(cors -> {})
-
                 .csrf(csrf -> csrf.disable())
-
                 .authorizeHttpRequests(auth -> auth
-                        // API không cần login
+                        // api không cần đăng nhập
                         .requestMatchers(
                                 "/auth/**",
                                 "/categories/**",
                                 "/menus/**",
-                                "/cart/**",
                                 "/wards/delivery"
                         ).permitAll()
+
+                        // api chỉ dành cho khách hàng
+                        .requestMatchers("/cart/**",
+                                "/orders/**",
+                                "/user/**",
+                                "/payment/**"
+                                )
+                        .hasRole("CUSTOMER")
+
+                        // api chỉ dành cho admin
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
+
+                        // còn lại là các api cần đăng nhập
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

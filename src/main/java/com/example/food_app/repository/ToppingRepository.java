@@ -13,6 +13,8 @@ public interface ToppingRepository extends JpaRepository<Topping, BigInteger> {
     JOIN t.menus m
     WHERE m.menuId = :menuId
     AND t.outOfStock = false
+    AND t.isActive = true
 """)
     List<Topping> findAvailableToppingsByMenuId(BigInteger menuId);
+    List<Topping> findByNameContainingIgnoreCase(String keyword);
 }

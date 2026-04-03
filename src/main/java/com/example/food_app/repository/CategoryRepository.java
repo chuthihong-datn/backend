@@ -11,4 +11,6 @@ import java.util.List;
 public interface CategoryRepository extends JpaRepository<Category, BigInteger> {
     List<Category> findAllByIsActiveIsTrue();
     Boolean existsByCategoryIdAndIsActiveIsTrue(BigInteger id);
+    List<Category> findByIsActiveTrue();
+    List<Category> findByNameContainingIgnoreCase(String keyword);
 }
