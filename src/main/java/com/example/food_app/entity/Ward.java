@@ -22,7 +22,7 @@ public class Ward {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ward_id")
-    private Long wardId;
+    private BigInteger wardId;
 
     @Column(name = "ward_code", nullable = false, unique = true)
     private String wardCode;

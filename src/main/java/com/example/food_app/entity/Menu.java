@@ -1,10 +1,7 @@
 package com.example.food_app.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -13,9 +10,7 @@ import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "menus")
@@ -24,6 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Menu {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_id")
@@ -66,9 +62,18 @@ public class Menu {
     )
     private Set<Topping> toppings = new HashSet<>();
 
-    @OneToMany(mappedBy = "menu")
-    private List<MenuSize> sizes;
+    @OneToMany(mappedBy = "menu",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<MenuSize> sizes = new ArrayList<>();
 
     @Column(name = "out_of_stock")
     private boolean outOfStock = false;
+
+    public void addSize(MenuSize size) {
+        sizes.add(size);
+        size.setMenu(this);
+    }
+
+    private boolean isDeleted = false;
 }

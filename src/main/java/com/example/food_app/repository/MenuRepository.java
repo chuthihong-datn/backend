@@ -20,4 +20,6 @@ public interface MenuRepository extends JpaRepository<Menu, BigInteger> {
     @Modifying
     @Query("UPDATE Menu m SET m.isActive = :isActive WHERE m.category.categoryId = :categoryId")
     void updateIsActiveByCategoryId(BigInteger categoryId, Boolean isActive);
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndMenuIdNot(String name, BigInteger menuId);
 }

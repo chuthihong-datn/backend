@@ -57,6 +57,13 @@ public class AdminMenuService {
                         HttpStatus.BAD_REQUEST, "Category không tồn tại"
                 ));
 
+        if (menuRepository.existsByNameIgnoreCase(request.getName().trim())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Tên món đã tồn tại"
+            );
+        }
+
         Menu menu = new Menu();
         menu.setCategory(category);
         menu.setName(request.getName());
@@ -65,10 +72,12 @@ public class AdminMenuService {
         menu.setAmount(request.getAmount());
         menu.setIsActive(true);
 
+        // upload ảnh
         if (files != null && files.length > 0) {
             menu.setImages(uploadImages(files));
         }
 
+        // toppings
         if (request.getToppingIds() != null && !request.getToppingIds().isEmpty()) {
             Set<Topping> toppings = new HashSet<>(
                     toppingRepository.findAllById(request.getToppingIds())
@@ -77,16 +86,13 @@ public class AdminMenuService {
         }
 
         if (request.getSizes() != null && !request.getSizes().isEmpty()) {
-            List<MenuSize> sizes = request.getSizes().stream()
-                    .map(s -> {
-                        MenuSize ms = new MenuSize();
-                        ms.setMenu(menu);
-                        ms.setSizeName(s.getSizeName());
-                        ms.setExtraPrice(s.getExtraPrice());
-                        return ms;
-                    }).toList();
+            for (var s : request.getSizes()) {
+                MenuSize ms = new MenuSize();
+                ms.setSizeName(s.getSizeName());
+                ms.setExtraPrice(s.getExtraPrice());
 
-            menu.setSizes(sizes);
+                menu.addSize(ms);
+            }
         }
 
         menuRepository.save(menu);
@@ -103,10 +109,23 @@ public class AdminMenuService {
                 ));
 
         if (request.getName() != null) {
-            if (request.getName().trim().isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên không được để trống");
+            String newName = request.getName().trim();
+
+            if (newName.isEmpty()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Tên không được để trống"
+                );
             }
-            menu.setName(request.getName());
+
+            if (menuRepository.existsByNameIgnoreCaseAndMenuIdNot(newName, id)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Tên món đã tồn tại"
+                );
+            }
+
+            menu.setName(newName);
         }
 
         if (request.getDescription() != null) {
@@ -121,10 +140,12 @@ public class AdminMenuService {
             menu.setAmount(request.getAmount());
         }
 
+        // upload ảnh
         if (files != null && files.length > 0) {
             menu.setImages(uploadImages(files));
         }
 
+        // toppings
         if (request.getToppingIds() != null) {
             Set<Topping> toppings = new HashSet<>(
                     toppingRepository.findAllById(request.getToppingIds())
@@ -133,18 +154,16 @@ public class AdminMenuService {
         }
 
         if (request.getSizes() != null) {
+
             menu.getSizes().clear();
 
-            List<MenuSize> newSizes = request.getSizes().stream()
-                    .map(s -> {
-                        MenuSize ms = new MenuSize();
-                        ms.setMenu(menu);
-                        ms.setSizeName(s.getSizeName());
-                        ms.setExtraPrice(s.getExtraPrice());
-                        return ms;
-                    }).toList();
+            for (var s : request.getSizes()) {
+                MenuSize ms = new MenuSize();
+                ms.setSizeName(s.getSizeName());
+                ms.setExtraPrice(s.getExtraPrice());
 
-            menu.getSizes().addAll(newSizes);
+                menu.addSize(ms);
+            }
         }
 
         menuRepository.save(menu);
@@ -161,6 +180,7 @@ public class AdminMenuService {
                 ));
 
         menu.setIsActive(false);
+        menu.setDeleted(true);
         menuRepository.save(menu);
     }
 
@@ -240,14 +260,16 @@ public class AdminMenuService {
                 .toppings(menu.getToppings()
                         .stream().map(Topping::getName).toList())
 
-                .sizes(menu.getSizes().stream()
-                        .map(s -> MenuResponse.SizeResponse.builder()
-                                .sizeName(s.getSizeName())
-                                .extraPrice(s.getExtraPrice())
-                                .build())
-                        .toList())
-                .outOfStock(menu.isOutOfStock())
+                .sizes(menu.getSizes() == null ? List.of() :
+                        menu.getSizes().stream()
+                                .map(s -> MenuResponse.SizeResponse.builder()
+                                        .sizeName(s.getSizeName())
+                                        .extraPrice(s.getExtraPrice())
+                                        .build())
+                                .toList())
 
+                .outOfStock(menu.isOutOfStock())
+                .isDeleted(menu.isDeleted())
                 .build();
     }
 }

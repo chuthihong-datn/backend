@@ -1,19 +1,15 @@
-package com.example.food_app.dto.response.user;
+package com.example.food_app.dto.request.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WardResponse {
-    private BigInteger wardId;
-    private String name;
-    private boolean isDelivery;
+public class WardRequest {
     private Integer shippingFee;
+    private Boolean isDelivery;
 }

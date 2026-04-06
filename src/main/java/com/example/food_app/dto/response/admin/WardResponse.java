@@ -1,4 +1,4 @@
-package com.example.food_app.dto.response.user;
+package com.example.food_app.dto.response.admin;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +14,10 @@ import java.math.BigInteger;
 @Builder
 public class WardResponse {
     private BigInteger wardId;
+    private String wardCode;
     private String name;
-    private boolean isDelivery;
     private Integer shippingFee;
+    private Boolean isDelivery;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

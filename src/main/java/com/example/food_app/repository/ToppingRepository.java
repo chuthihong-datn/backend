@@ -17,4 +17,5 @@ public interface ToppingRepository extends JpaRepository<Topping, BigInteger> {
 """)
     List<Topping> findAvailableToppingsByMenuId(BigInteger menuId);
     List<Topping> findByNameContainingIgnoreCase(String keyword);
+    List<Topping> findByToppingIdInAndIsActiveTrue(List<BigInteger> ids);
 }

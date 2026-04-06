@@ -45,7 +45,14 @@ public class AdminCategoryService {
         }
 
         Category category = new Category();
-        category.setName(request.getName());
+        String name = normalizeName(request.getName());
+        if (categoryRepository.existsByNameIgnoreCase(name)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Tên danh mục đã tồn tại"
+            );
+        }
+        category.setName(name);
         category.setDescription(request.getDescription());
         category.setIsActive(true);
 
@@ -79,13 +86,24 @@ public class AdminCategoryService {
                 ));
 
         if (request.getName() != null) {
-            if (request.getName().trim().isEmpty()) {
+
+            String newName = normalizeName(request.getName());
+
+            if (newName.isEmpty()) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Tên không được để trống"
                 );
             }
-            category.setName(request.getName());
+
+            if (categoryRepository.existsByNameIgnoreCaseAndCategoryIdNot(newName, id)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Tên danh mục đã tồn tại"
+                );
+            }
+
+            category.setName(newName);
         }
 
         if (request.getDescription() != null) {
@@ -94,9 +112,7 @@ public class AdminCategoryService {
 
         if (request.getIsActive() != null) {
             category.setIsActive(request.getIsActive());
-            if (!request.getIsActive()) {
-                menuRepository.updateIsActiveByCategoryId(id, false);
-            }
+            menuRepository.updateIsActiveByCategoryId(id, request.getIsActive());
         }
 
         if (file != null && !file.isEmpty()) {
@@ -185,5 +201,9 @@ public class AdminCategoryService {
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();
+    }
+
+    private String normalizeName(String name) {
+        return name.trim().replaceAll("\\s+", " ");
     }
 }
