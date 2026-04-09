@@ -1,9 +1,14 @@
 package com.example.food_app.service.user;
 
 import com.example.food_app.dto.request.user.ProfileUpdateRequest;
+import com.example.food_app.dto.response.user.OrderByUserResponse;
 import com.example.food_app.dto.response.user.ProfileResponse;
 import com.example.food_app.entity.Account;
+import com.example.food_app.entity.Order;
+import com.example.food_app.entity.OrderDetail;
+import com.example.food_app.entity.Topping;
 import com.example.food_app.repository.AccountRepository;
+import com.example.food_app.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,6 +18,8 @@ import com.cloudinary.utils.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -134,6 +141,77 @@ public class UserService {
                 .phone(account.getPhone())
                 .avtUrl(account.getAvtUrl())
                 .createdAt(account.getCreatedAt())
+                .build();
+    }
+
+    private final OrderRepository orderRepository;
+
+    public List<OrderByUserResponse> getMyOrders(Account account) {
+        List<Order> orders = orderRepository.findByAccountOrderByCreatedAtDesc(account);
+
+        if (orders.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Bạn chưa đặt đơn nào"
+            );
+        }
+
+        return orders.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public OrderByUserResponse getMyOrderDetail(
+            BigInteger orderId,
+            Account account
+    ) {
+        Order order = orderRepository.findByOrderIdAndAccount(orderId, account)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy đơn hàng"
+                ));
+
+        return mapToResponse(order);
+    }
+
+    private OrderByUserResponse mapToResponse(Order order) {
+
+        List<OrderByUserResponse.OrderItemResponse> items =
+                order.getOrderDetails().stream()
+                        .map(this::mapItem)
+                        .toList();
+
+        return OrderByUserResponse.builder()
+                .orderId(order.getOrderId())
+                .address(order.getAddressDetail())
+                .wardName(order.getWard().getName())
+                .totalAmount(order.getTotalAmount())
+                .shippingFee(order.getShippingFee())
+                .finalAmount(order.getFinalAmount())
+                .orderStatus(order.getOrderStatus())
+                .paymentStatus(order.getPaymentStatus())
+                .createdAt(order.getCreatedAt())
+                .items(items)
+                .build();
+    }
+
+    private OrderByUserResponse.OrderItemResponse mapItem(OrderDetail detail) {
+
+        String sizeName = detail.getMenuSize() != null
+                ? detail.getMenuSize().getSizeName()
+                : null;
+
+        List<String> toppings = detail.getToppings()
+                .stream()
+                .map(Topping::getName)
+                .toList();
+
+        return OrderByUserResponse.OrderItemResponse.builder()
+                .menuName(detail.getMenu().getName())
+                .sizeName(sizeName)
+                .toppings(toppings)
+                .quantity(detail.getQuantity())
+                .itemTotal(detail.getItemTotalPrice())
                 .build();
     }
 }

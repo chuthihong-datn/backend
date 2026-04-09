@@ -25,11 +25,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public ResponseEntity<?> login(LoginRequest request) {
-
         try {
 
             Optional<Account> optionalAccount =
-                    accountRepository.findByEmailAndIsActiveIsTrue(request.getEmail());
+                    accountRepository.findByEmail(request.getEmail());
 
             if (optionalAccount.isEmpty()) {
                 return ResponseEntity
@@ -38,6 +37,12 @@ public class AuthService {
             }
 
             Account account = optionalAccount.get();
+
+            if (!Boolean.TRUE.equals(account.getIsActive())) {
+                return ResponseEntity
+                        .badRequest()
+                        .body("Tài khoản đã bị vô hiệu hóa");
+            }
 
             if (!account.getPassword().equals(request.getPassword())) {
                 return ResponseEntity
@@ -62,7 +67,6 @@ public class AuthService {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-
             return ResponseEntity
                     .internalServerError()
                     .body("Lỗi hệ thống: " + e.getMessage());
