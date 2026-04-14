@@ -13,21 +13,24 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CartService {
+
     private final CartRepository cartRepository;
     private final MenuRepository menuRepository;
     private final MenuSizeRepository menuSizeRepository;
     private final ToppingRepository toppingRepository;
     private final CartItemRepository cartItemRepository;
+    private final FlashSaleRepository flashSaleRepository;
 
-    //thêm vào giỏ hàng
+    // ================= ADD TO CART =================
     @Transactional
     public void addToCart(Account account, AddToCartRequest request) {
+
         Cart cart = cartRepository.findByAccount(account)
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
@@ -36,91 +39,65 @@ public class CartService {
                 });
 
         Menu menuItem = menuRepository.findById(request.getMenuId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Menu không tồn tại"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Menu không tồn tại"));
 
-        final MenuSize menuSize = request.getMenuSizeId() != null
-                ? menuSizeRepository.findById(request.getMenuSizeId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Size không tồn tại"
-                ))
-                : null;
+        MenuSize menuSize;
 
-        final List<Topping> toppings =
-                request.getToppingIds() != null && !request.getToppingIds().isEmpty()
-                        ? toppingRepository.findAllById(request.getToppingIds())
-                        : new ArrayList<>();
+        if (request.getMenuSizeId() != null) {
 
-        Optional<CartItem> existingItem = cart.getCartItems()
-                .stream()
-                .filter(item -> isSameItem(item, menuItem, menuSize, toppings))
-                .findFirst();
+            menuSize = menuSizeRepository.findById(request.getMenuSizeId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Size không tồn tại"
+                    ));
 
-        int availableStock = menuItem.getAmount();
-
-        int newQuantity = existingItem
-                .map(item -> item.getQuantity() + request.getQuantity())
-                .orElse(request.getQuantity());
-
-        if (newQuantity > availableStock) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Số lượng vượt quá tồn kho"
-            );
-        }
-
-        if (existingItem.isPresent()) {
-            CartItem item = existingItem.get();
-            item.setQuantity(newQuantity);
-            cartItemRepository.save(item);
         } else {
-            CartItem newItem = new CartItem();
-            newItem.setCart(cart);
-            newItem.setMenu(menuItem);
-            newItem.setMenuSize(menuSize);
-            newItem.setQuantity(request.getQuantity());
-            newItem.setToppings(toppings);
 
-            cartItemRepository.save(newItem);
-            cart.getCartItems().add(newItem);
+            // 👉 AUTO chọn size nhỏ nhất nếu có
+            if (menuItem.getSizes() != null && !menuItem.getSizes().isEmpty()) {
+
+                menuSize = menuItem.getSizes()
+                        .stream()
+                        .min(Comparator.comparing(MenuSize::getExtraPrice))
+                        .orElse(null);
+
+            } else {
+                menuSize = null;
+            }
         }
+
+        List<Topping> toppings = request.getToppingIds() != null
+                ? toppingRepository.findAllById(request.getToppingIds())
+                : new ArrayList<>();
+
+        if (request.getQuantity() > menuItem.getAmount()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vượt quá tồn kho");
+        }
+
+        // ❌ KHÔNG gộp item → mỗi lần add là 1 dòng riêng
+        CartItem newItem = new CartItem();
+        newItem.setCart(cart);
+        newItem.setMenu(menuItem);
+        newItem.setMenuSize(menuSize);
+        newItem.setQuantity(request.getQuantity());
+        newItem.setToppings(toppings);
+
+        cartItemRepository.save(newItem);
     }
 
-    //kiểm tra món giống nhau
-    private boolean isSameItem(CartItem item, Menu menu, MenuSize size, List<Topping> toppings) {
-        if (!item.getMenu().getMenuId().equals(menu.getMenuId())) return false;
-
-        if (!Objects.equals(
-                item.getMenuSize() != null ? item.getMenuSize().getMenuSizeId() : null,
-                size != null ? size.getMenuSizeId() : null
-        )) return false;
-
-        Set<BigInteger> itemToppingIds = item.getToppings()
-                .stream().map(Topping::getToppingId)
-                .collect(Collectors.toSet());
-
-        Set<BigInteger> requestToppingIds = toppings
-                .stream().map(Topping::getToppingId)
-                .collect(Collectors.toSet());
-
-        return itemToppingIds.equals(requestToppingIds);
-    }
-
-    //lấy danh sách món trong giỏ
+    // ================= GET CART =================
     public CartResponse getCart(Account account) {
 
         Cart cart = cartRepository.findByAccount(account)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Giỏ hàng không tồn tại"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng không tồn tại"));
+
+        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
+
+        boolean[] usedFlashSale = {false};
 
         List<CartItemResponse> items = cart.getCartItems()
                 .stream()
-                .map(this::mapToResponse)
+                .map(item -> mapToResponse(item, flashSaleMap, usedFlashSale))
                 .toList();
 
         BigDecimal totalAmount = items.stream()
@@ -133,8 +110,14 @@ public class CartService {
                 .build();
     }
 
-    private CartItemResponse mapToResponse(CartItem item) {
+    // ================= MAP RESPONSE =================
+    private CartItemResponse mapToResponse(
+            CartItem item,
+            Map<BigInteger, FlashSale> flashSaleMap,
+            boolean[] usedFlashSale
+    ) {
 
+        // ===== IMAGE (GIỮ NGUYÊN LOGIC) =====
         String image = null;
         if (item.getMenu().getImages() != null && !item.getMenu().getImages().isEmpty()) {
             image = item.getMenu().getImages().get(0);
@@ -160,55 +143,102 @@ public class CartService {
                 .map(Topping::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal price = basePrice
-                .add(sizePrice)
-                .add(toppingPrice);
+        BigDecimal originalPrice = basePrice.add(sizePrice).add(toppingPrice);
 
-        BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(item.getQuantity()));
+        FlashSale fs = flashSaleMap.get(item.getMenu().getMenuId());
+
+        int quantity = item.getQuantity();
+
+        BigDecimal itemTotal;
+
+        int saleQty = 0;
+        BigDecimal salePrice = null;
+
+        // ===== FLASH SALE: chỉ 1 item được giảm =====
+        if (fs != null && !usedFlashSale[0]) {
+
+            salePrice = applyDiscount(originalPrice, fs);
+            saleQty = 1;
+
+            int normalQty = quantity - 1;
+
+            itemTotal = salePrice
+                    .add(originalPrice.multiply(BigDecimal.valueOf(Math.max(normalQty, 0))));
+
+            usedFlashSale[0] = true;
+
+        } else {
+            itemTotal = originalPrice.multiply(BigDecimal.valueOf(quantity));
+        }
 
         return CartItemResponse.builder()
                 .cartItemId(item.getCartItemId())
-                .image(image)
+                .image(image) // ✅ FIX IMAGE
                 .menuId(item.getMenu().getMenuId())
                 .menuName(item.getMenu().getName())
                 .sizeName(sizeName)
                 .toppings(toppingNames)
-                .quantity(item.getQuantity())
-                .price(price)
+                .quantity(quantity)
+                .price(originalPrice)
                 .itemTotal(itemTotal)
+                .saleQuantity(saleQty)
+                .salePrice(salePrice)
+                .isFlashSaleApplied(saleQty > 0)
                 .build();
     }
 
-    //sửa số lượng món
-    @Transactional
-    public void updateQuantity(Account account, BigInteger cartItemId, int quantity) {
+    // ================= FLASH SALE MAP =================
+    private Map<BigInteger, FlashSale> buildFlashSaleMap() {
 
-        if (account == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Chưa đăng nhập");
+        LocalDateTime now = LocalDateTime.now();
+
+        List<FlashSale> activeSales = flashSaleRepository.findAll().stream()
+                .filter(fs -> Boolean.TRUE.equals(fs.getIsActive()))
+                .filter(fs -> fs.getStartTime() != null && fs.getEndTime() != null)
+                .filter(fs -> now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime()))
+                .toList();
+
+        Map<BigInteger, FlashSale> map = new HashMap<>();
+
+        for (FlashSale fs : activeSales) {
+            if (fs.getItems() == null) continue;
+
+            for (Menu item : fs.getItems()) {
+                map.put(item.getMenuId(), fs);
+            }
         }
 
+        return map;
+    }
+
+    // ================= DISCOUNT =================
+    private BigDecimal applyDiscount(BigDecimal price, FlashSale fs) {
+
+        if ("PERCENT".equals(fs.getDiscountType().name())) {
+
+            BigDecimal discount = price
+                    .multiply(fs.getDiscountValue())
+                    .divide(BigDecimal.valueOf(100));
+
+            if (fs.getMaxDiscount() != null) {
+                discount = discount.min(fs.getMaxDiscount());
+            }
+
+            return price.subtract(discount);
+        }
+
+        return price.subtract(fs.getDiscountValue());
+    }
+
+    // ================= UPDATE =================
+    @Transactional
+    public void updateQuantity(Account account, BigInteger cartItemId, Integer quantity) {
+
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart item not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy item"));
 
         if (!item.getCart().getAccount().getAccountId().equals(account.getAccountId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
-        }
-
-        int availableStock = item.getMenu().getAmount();
-
-        int totalOtherItems = item.getCart().getCartItems().stream()
-                .filter(i -> i.getMenu().getMenuId().equals(item.getMenu().getMenuId()))
-                .filter(i -> !i.getCartItemId().equals(cartItemId))
-                .mapToInt(CartItem::getQuantity)
-                .sum();
-
-        int newTotal = totalOtherItems + quantity;
-
-        if (newTotal > availableStock) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Tổng số lượng vượt quá tồn kho"
-            );
         }
 
         if (quantity <= 0) {
@@ -216,22 +246,23 @@ public class CartService {
             return;
         }
 
+        if (quantity > item.getMenu().getAmount()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vượt tồn kho");
+        }
+
         item.setQuantity(quantity);
         cartItemRepository.save(item);
     }
 
-    //xóa món trong giỏ
+    // ================= DELETE =================
     @Transactional
     public void deleteCartItem(Account account, BigInteger cartItemId) {
 
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Giỏ hàng không tồn tại"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy item"));
 
         if (!item.getCart().getAccount().getAccountId().equals(account.getAccountId())) {
-            throw new RuntimeException("Access denied");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền");
         }
 
         cartItemRepository.delete(item);

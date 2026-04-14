@@ -1,7 +1,6 @@
 package com.example.food_app.controller.user;
 
 import com.example.food_app.dto.response.user.MenuDetailResponse;
-import com.example.food_app.dto.response.user.MenuHotResponse;
 import com.example.food_app.dto.response.user.MenuResponse;
 import com.example.food_app.service.user.MenuService;
 import lombok.AllArgsConstructor;
@@ -37,10 +36,5 @@ public class MenuController {
             @RequestParam String keyword) {
 
         return ResponseEntity.ok(menuService.searchMenus(keyword));
-    }
-
-    @GetMapping("/hot")
-    public ResponseEntity<List<MenuHotResponse>> getTopHotMenus() {
-        return ResponseEntity.ok(menuService.getTopSellingMenus());
     }
 }

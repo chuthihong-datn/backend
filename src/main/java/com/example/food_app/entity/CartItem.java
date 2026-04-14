@@ -44,4 +44,7 @@ public class CartItem {
             inverseJoinColumns = @JoinColumn(name = "topping_id")
     )
     private List<Topping> toppings;
+
+    @Column(name = "is_flash_sale")
+    private Boolean isFlashSale = false;
 }

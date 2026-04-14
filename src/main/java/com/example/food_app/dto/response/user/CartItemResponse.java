@@ -16,11 +16,14 @@ import java.util.List;
 public class CartItemResponse {
     private BigInteger cartItemId;
     private BigInteger menuId;
-    private String image;
     private String menuName;
+    private String image;
     private String sizeName;
     private List<String> toppings;
-    private Integer quantity;
+    private int quantity;
     private BigDecimal price;
     private BigDecimal itemTotal;
+    private boolean isFlashSaleApplied;
+    private int saleQuantity;
+    private BigDecimal salePrice;
 }

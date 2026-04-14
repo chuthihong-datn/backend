@@ -15,4 +15,7 @@ import java.util.List;
 public class CartResponse {
     private List<CartItemResponse> items;
     private BigDecimal totalAmount;
+    private Boolean flashSaleEligible;
+    private BigDecimal minOrderAmount;
+    private String flashSaleMessage;
 }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,4 +22,9 @@ public class MenuResponse {
     private BigDecimal minPrice;
     private Integer amount;
     private boolean outOfStock;
+    private boolean isFlashSale;
+    private BigDecimal discountedPrice;
+    private Integer discountPercent;
+    private LocalDateTime flashSaleEndTime;
+    private Long totalSold;
 }
