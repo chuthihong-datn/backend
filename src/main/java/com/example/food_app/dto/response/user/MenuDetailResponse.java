@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -31,4 +32,9 @@ public class MenuDetailResponse {
     private List<ReviewResponse> reviews;
 
     private boolean outOfStock;
+
+    private Boolean isFlashSale;
+    private BigDecimal discountedPrice;
+    private Integer discountPercent;
+    private LocalDateTime flashSaleEndTime;
 }

@@ -3,6 +3,7 @@ package com.example.food_app.service.user;
 import com.example.food_app.dto.request.user.OrderRequest;
 import com.example.food_app.entity.*;
 import com.example.food_app.entity.enums.OrderStatus;
+import com.example.food_app.entity.enums.PaymentMethod;
 import com.example.food_app.entity.enums.PaymentStatus;
 import com.example.food_app.repository.*;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,7 @@ public class OrderService {
     @Transactional
     public Object createOrder(OrderRequest request, Account account, String ip) {
 
+        // get cart
         Cart cart = cartRepository.findByAccount(account)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Không tìm thấy giỏ hàng"
@@ -45,6 +47,7 @@ public class OrderService {
             );
         }
 
+        // check khu vực giao
         Ward ward = wardRepository.findById(request.getWardId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Không tìm thấy khu vực"
@@ -56,6 +59,7 @@ public class OrderService {
             );
         }
 
+        // tạo order
         Order order = new Order();
         order.setAccount(account);
         order.setWard(ward);
@@ -67,41 +71,22 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        // ================= FLASH SALE MAP =================
         Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
 
-        boolean usedFlashSale = false;
-        FlashSale activeFlashSale = null;
+        BigDecimal rawTotal = BigDecimal.ZERO;
 
-        BigDecimal totalAmount = BigDecimal.ZERO;
-
-        // ================= CALCULATE CART TOTAL FIRST =================
         for (CartItem item : cartItems) {
+            BigDecimal originalPrice = calculateOriginalPrice(item);
 
-            Menu menu = item.getMenu();
-            int quantity = item.getQuantity();
-
-            MenuSize size = item.getMenuSize();
-            BigDecimal sizePrice = size != null ? size.getExtraPrice() : BigDecimal.ZERO;
-
-            List<Topping> toppingList = item.getToppings() != null
-                    ? item.getToppings()
-                    : new ArrayList<>();
-
-            BigDecimal toppingTotal = toppingList.stream()
-                    .map(Topping::getPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            BigDecimal basePrice = menu.getBasePrice();
-
-            BigDecimal originalPrice = basePrice
-                    .add(sizePrice)
-                    .add(toppingTotal);
-
-            totalAmount = totalAmount.add(originalPrice.multiply(BigDecimal.valueOf(quantity)));
+            rawTotal = rawTotal.add(
+                    originalPrice.multiply(BigDecimal.valueOf(item.getQuantity()))
+            );
         }
 
-        // ================= ORDER DETAILS =================
+        // áp dụng flash sale
+        boolean usedFlashSale = false;
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
         for (CartItem item : cartItems) {
 
             Menu menu = item.getMenu();
@@ -120,34 +105,15 @@ public class OrderService {
                 );
             }
 
-            MenuSize size = item.getMenuSize();
-            BigDecimal sizePrice = size != null ? size.getExtraPrice() : BigDecimal.ZERO;
-
-            List<Topping> toppingList = item.getToppings() != null
-                    ? item.getToppings()
-                    : new ArrayList<>();
-
-            BigDecimal toppingTotal = toppingList.stream()
-                    .map(Topping::getPrice)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-            BigDecimal basePrice = menu.getBasePrice();
-
-            BigDecimal originalPrice = basePrice
-                    .add(sizePrice)
-                    .add(toppingTotal);
-
+            BigDecimal originalPrice = calculateOriginalPrice(item);
             FlashSale fs = flashSaleMap.get(menu.getMenuId());
 
             BigDecimal itemTotal;
 
-            // ================= APPLY FLASH SALE =================
             if (fs != null && !usedFlashSale) {
 
-                activeFlashSale = fs;
-
                 boolean eligible = fs.getMinOrderAmount() == null
-                        || totalAmount.compareTo(fs.getMinOrderAmount()) >= 0;
+                        || rawTotal.compareTo(fs.getMinOrderAmount()) >= 0;
 
                 if (eligible) {
 
@@ -169,23 +135,30 @@ public class OrderService {
                 itemTotal = originalPrice.multiply(BigDecimal.valueOf(quantity));
             }
 
+            totalAmount = totalAmount.add(itemTotal);
+
+            // lưu chi tiết đơn hàng
             OrderDetail detail = new OrderDetail();
             detail.setOrder(order);
             detail.setMenu(menu);
-            detail.setMenuSize(size);
+            detail.setMenuSize(item.getMenuSize());
             detail.setQuantity(quantity);
-            detail.setBasePrice(basePrice);
-            detail.setSizeExtraPrice(sizePrice);
-            detail.setToppingTotalPrice(toppingTotal);
+            detail.setBasePrice(menu.getBasePrice());
+            detail.setSizeExtraPrice(
+                    item.getMenuSize() != null ? item.getMenuSize().getExtraPrice() : BigDecimal.ZERO
+            );
+            detail.setToppingTotalPrice(
+                    item.getToppings().stream()
+                            .map(Topping::getPrice)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            );
             detail.setItemTotalPrice(itemTotal);
-            detail.setToppings(new HashSet<>(toppingList));
+            detail.setToppings(new HashSet<>(item.getToppings()));
 
             orderDetailRepository.save(detail);
         }
 
-        // ================= FINAL AMOUNT =================
-        BigDecimal finalAmount = totalAmount
-                .add(order.getShippingFee());
+        BigDecimal finalAmount = totalAmount.add(order.getShippingFee());
 
         order.setTotalAmount(totalAmount);
         order.setFinalAmount(finalAmount);
@@ -193,59 +166,72 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        // ================= PAYMENT =================
-        if (request.getPaymentMethod().name().equals("VNPAY")) {
+        // VNPay
+        if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
 
             String paymentUrl = vnpayService.createPaymentUrl(order, ip);
 
             return Map.of(
                     "orderId", order.getOrderId(),
                     "paymentUrl", paymentUrl,
+                    "totalAmount", totalAmount,
+                    "finalAmount", finalAmount,
                     "flashSaleApplied", usedFlashSale
             );
         }
 
-        // ================= UPDATE STOCK =================
+        // cập nhật tồn kho
         for (CartItem item : cartItems) {
             Menu menu = item.getMenu();
             menu.setAmount(menu.getAmount() - item.getQuantity());
             menuRepository.save(menu);
         }
 
+        // xóa giỏ hàng sau khi order thành công
         cartItemRepository.deleteByCart(cart);
 
         return Map.of(
                 "orderId", order.getOrderId(),
                 "message", "Đặt hàng thành công",
+                "totalAmount", totalAmount,
+                "finalAmount", finalAmount,
                 "flashSaleApplied", usedFlashSale
         );
     }
 
-    // ================= FLASH SALE MAP =================
+    private BigDecimal calculateOriginalPrice(CartItem item) {
+
+        BigDecimal base = item.getMenu().getBasePrice();
+
+        BigDecimal size = item.getMenuSize() != null
+                ? item.getMenuSize().getExtraPrice()
+                : BigDecimal.ZERO;
+
+        BigDecimal topping = item.getToppings().stream()
+                .map(Topping::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return base.add(size).add(topping);
+    }
+
     private Map<BigInteger, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
+        Map<BigInteger, FlashSale> map = new HashMap<>();
 
-        List<FlashSale> activeSales = flashSaleRepository.findAll().stream()
+        flashSaleRepository.findAll().stream()
                 .filter(fs -> Boolean.TRUE.equals(fs.getIsActive()))
                 .filter(fs -> fs.getStartTime() != null && fs.getEndTime() != null)
                 .filter(fs -> now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime()))
-                .toList();
-
-        Map<BigInteger, FlashSale> map = new HashMap<>();
-
-        for (FlashSale fs : activeSales) {
-            if (fs.getItems() == null) continue;
-
-            for (Menu item : fs.getItems()) {
-                map.put(item.getMenuId(), fs);
-            }
-        }
+                .forEach(fs -> {
+                    if (fs.getItems() != null) {
+                        fs.getItems().forEach(m -> map.put(m.getMenuId(), fs));
+                    }
+                });
 
         return map;
     }
 
-    // ================= DISCOUNT =================
     private BigDecimal applyDiscount(BigDecimal price, FlashSale fs) {
 
         if ("PERCENT".equals(fs.getDiscountType().name())) {

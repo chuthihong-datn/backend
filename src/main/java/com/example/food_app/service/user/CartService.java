@@ -27,7 +27,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final FlashSaleRepository flashSaleRepository;
 
-    // ================= ADD TO CART =================
+    // add to cart
     @Transactional
     public void addToCart(Account account, AddToCartRequest request) {
 
@@ -44,26 +44,13 @@ public class CartService {
         MenuSize menuSize;
 
         if (request.getMenuSizeId() != null) {
-
             menuSize = menuSizeRepository.findById(request.getMenuSizeId())
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Size không tồn tại"
-                    ));
-
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size không tồn tại"));
         } else {
-
-            // 👉 AUTO chọn size nhỏ nhất nếu có
-            if (menuItem.getSizes() != null && !menuItem.getSizes().isEmpty()) {
-
-                menuSize = menuItem.getSizes()
-                        .stream()
-                        .min(Comparator.comparing(MenuSize::getExtraPrice))
-                        .orElse(null);
-
-            } else {
-                menuSize = null;
-            }
+            menuSize = menuItem.getSizes() == null ? null :
+                    menuItem.getSizes().stream()
+                            .min(Comparator.comparing(MenuSize::getExtraPrice))
+                            .orElse(null);
         }
 
         List<Topping> toppings = request.getToppingIds() != null
@@ -74,7 +61,6 @@ public class CartService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vượt quá tồn kho");
         }
 
-        // ❌ KHÔNG gộp item → mỗi lần add là 1 dòng riêng
         CartItem newItem = new CartItem();
         newItem.setCart(cart);
         newItem.setMenu(menuItem);
@@ -85,152 +71,154 @@ public class CartService {
         cartItemRepository.save(newItem);
     }
 
-    // ================= GET CART =================
+    // get cart
     public CartResponse getCart(Account account) {
 
         Cart cart = cartRepository.findByAccount(account)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giỏ hàng không tồn tại"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ"));
 
+        List<CartItem> cartItems = cartItemRepository.findByCart(cart);
         Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
 
-        boolean[] usedFlashSale = {false};
-
-        List<CartItemResponse> items = cart.getCartItems()
-                .stream()
-                .map(item -> mapToResponse(item, flashSaleMap, usedFlashSale))
-                .toList();
-
-        BigDecimal totalAmount = items.stream()
-                .map(CartItemResponse::getItemTotal)
+        // tổng tiền
+        BigDecimal rawTotal = cartItems.stream()
+                .map(i -> getOriginalPrice(i).multiply(BigDecimal.valueOf(i.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        boolean usedFlashSale = false;
+        boolean flashSaleEligible = true;
+        boolean hasFlashSaleItem = false;
+
+        BigDecimal minOrderAmount = BigDecimal.ZERO;
+
+        List<CartItemResponse> responses = new ArrayList<>();
+        BigDecimal finalTotal = BigDecimal.ZERO;
+
+        for (CartItem item : cartItems) {
+
+            BigDecimal originalPrice = getOriginalPrice(item);
+            FlashSale fs = flashSaleMap.get(item.getMenu().getMenuId());
+
+            if (fs != null) {
+                hasFlashSaleItem = true;
+
+                if (fs.getMinOrderAmount() != null) {
+                    minOrderAmount = minOrderAmount.max(fs.getMinOrderAmount());
+                }
+            }
+
+            boolean eligible = fs == null
+                    || fs.getMinOrderAmount() == null
+                    || rawTotal.compareTo(fs.getMinOrderAmount()) >= 0;
+
+            if (fs != null && !eligible) {
+                flashSaleEligible = false;
+            }
+
+            var result = FlashSaleEngine.calculate(
+                    originalPrice,
+                    item.getQuantity(),
+                    fs,
+                    eligible,
+                    usedFlashSale
+            );
+
+            if (result.isFlashSaleApplied()) {
+                usedFlashSale = true;
+            }
+
+            finalTotal = finalTotal.add(result.getFinalPrice());
+
+            String image = (item.getMenu().getImages() != null && !item.getMenu().getImages().isEmpty())
+                    ? item.getMenu().getImages().get(0)
+                    : "";
+
+            // list topping
+            List<String> toppingNames = item.getToppings() != null
+                    ? item.getToppings().stream()
+                    .map(Topping::getName)
+                    .toList()
+                    : new ArrayList<>();
+
+            // size
+            String sizeName = item.getMenuSize() != null
+                    ? item.getMenuSize().getSizeName()
+                    : null;
+
+            responses.add(CartItemResponse.builder()
+                    .cartItemId(item.getCartItemId())
+                    .menuId(item.getMenu().getMenuId())
+                    .menuName(item.getMenu().getName())
+                    .image(image)
+                    .quantity(item.getQuantity())
+                    .price(originalPrice)
+                    .itemTotal(result.getFinalPrice())
+                    .salePrice(result.getSalePrice())
+                    .saleQuantity(result.getSaleQuantity())
+                    .isFlashSaleApplied(result.isFlashSaleApplied())
+                    .toppings(toppingNames)
+                    .sizeName(sizeName)
+
+                    .build());
+        }
+
+        // trả về message nếu đơn chưa đạt giá trị tối thiểu để áp dụng flash sale
+        String message = null;
+
+        if (hasFlashSaleItem && !flashSaleEligible && minOrderAmount.compareTo(BigDecimal.ZERO) > 0) {
+
+            BigDecimal missing = minOrderAmount.subtract(rawTotal).max(BigDecimal.ZERO);
+            long missingK = (long) Math.ceil(missing.doubleValue() / 1000);
+
+            message = "Mua thêm " + missingK + "k để đạt giá trị tối thiểu áp dụng flash sale.";
+        }
 
         return CartResponse.builder()
-                .items(items)
-                .totalAmount(totalAmount)
+                .items(responses)
+                .totalAmount(finalTotal)
+                .flashSaleEligible(flashSaleEligible)
+                .minOrderAmount(minOrderAmount)
+                .flashSaleMessage(message)
                 .build();
     }
 
-    // ================= MAP RESPONSE =================
-    private CartItemResponse mapToResponse(
-            CartItem item,
-            Map<BigInteger, FlashSale> flashSaleMap,
-            boolean[] usedFlashSale
-    ) {
-
-        // ===== IMAGE (GIỮ NGUYÊN LOGIC) =====
-        String image = null;
-        if (item.getMenu().getImages() != null && !item.getMenu().getImages().isEmpty()) {
-            image = item.getMenu().getImages().get(0);
-        }
-
-        String sizeName = item.getMenuSize() != null
-                ? item.getMenuSize().getSizeName()
-                : null;
-
-        List<String> toppingNames = item.getToppings()
-                .stream()
-                .map(Topping::getName)
-                .toList();
-
-        BigDecimal basePrice = item.getMenu().getBasePrice();
-
-        BigDecimal sizePrice = item.getMenuSize() != null
-                ? item.getMenuSize().getExtraPrice()
-                : BigDecimal.ZERO;
-
-        BigDecimal toppingPrice = item.getToppings()
-                .stream()
-                .map(Topping::getPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal originalPrice = basePrice.add(sizePrice).add(toppingPrice);
-
-        FlashSale fs = flashSaleMap.get(item.getMenu().getMenuId());
-
-        int quantity = item.getQuantity();
-
-        BigDecimal itemTotal;
-
-        int saleQty = 0;
-        BigDecimal salePrice = null;
-
-        // ===== FLASH SALE: chỉ 1 item được giảm =====
-        if (fs != null && !usedFlashSale[0]) {
-
-            salePrice = applyDiscount(originalPrice, fs);
-            saleQty = 1;
-
-            int normalQty = quantity - 1;
-
-            itemTotal = salePrice
-                    .add(originalPrice.multiply(BigDecimal.valueOf(Math.max(normalQty, 0))));
-
-            usedFlashSale[0] = true;
-
-        } else {
-            itemTotal = originalPrice.multiply(BigDecimal.valueOf(quantity));
-        }
-
-        return CartItemResponse.builder()
-                .cartItemId(item.getCartItemId())
-                .image(image) // ✅ FIX IMAGE
-                .menuId(item.getMenu().getMenuId())
-                .menuName(item.getMenu().getName())
-                .sizeName(sizeName)
-                .toppings(toppingNames)
-                .quantity(quantity)
-                .price(originalPrice)
-                .itemTotal(itemTotal)
-                .saleQuantity(saleQty)
-                .salePrice(salePrice)
-                .isFlashSaleApplied(saleQty > 0)
-                .build();
-    }
-
-    // ================= FLASH SALE MAP =================
+    // flash sale map
     private Map<BigInteger, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
 
-        List<FlashSale> activeSales = flashSaleRepository.findAll().stream()
+        Map<BigInteger, FlashSale> map = new HashMap<>();
+
+        flashSaleRepository.findAll().stream()
                 .filter(fs -> Boolean.TRUE.equals(fs.getIsActive()))
                 .filter(fs -> fs.getStartTime() != null && fs.getEndTime() != null)
                 .filter(fs -> now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime()))
-                .toList();
-
-        Map<BigInteger, FlashSale> map = new HashMap<>();
-
-        for (FlashSale fs : activeSales) {
-            if (fs.getItems() == null) continue;
-
-            for (Menu item : fs.getItems()) {
-                map.put(item.getMenuId(), fs);
-            }
-        }
+                .forEach(fs -> {
+                    if (fs.getItems() != null) {
+                        fs.getItems().forEach(m -> map.put(m.getMenuId(), fs));
+                    }
+                });
 
         return map;
     }
 
-    // ================= DISCOUNT =================
-    private BigDecimal applyDiscount(BigDecimal price, FlashSale fs) {
+    // giá ban đầu
+    private BigDecimal getOriginalPrice(CartItem item) {
 
-        if ("PERCENT".equals(fs.getDiscountType().name())) {
+        BigDecimal base = item.getMenu().getBasePrice();
 
-            BigDecimal discount = price
-                    .multiply(fs.getDiscountValue())
-                    .divide(BigDecimal.valueOf(100));
+        BigDecimal size = item.getMenuSize() != null
+                ? item.getMenuSize().getExtraPrice()
+                : BigDecimal.ZERO;
 
-            if (fs.getMaxDiscount() != null) {
-                discount = discount.min(fs.getMaxDiscount());
-            }
+        BigDecimal topping = item.getToppings().stream()
+                .map(Topping::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-            return price.subtract(discount);
-        }
-
-        return price.subtract(fs.getDiscountValue());
+        return base.add(size).add(topping);
     }
 
-    // ================= UPDATE =================
+    // update số lượng item
     @Transactional
     public void updateQuantity(Account account, BigInteger cartItemId, Integer quantity) {
 
@@ -254,7 +242,7 @@ public class CartService {
         cartItemRepository.save(item);
     }
 
-    // ================= DELETE =================
+    // xóa món trong giỏ
     @Transactional
     public void deleteCartItem(Account account, BigInteger cartItemId) {
 

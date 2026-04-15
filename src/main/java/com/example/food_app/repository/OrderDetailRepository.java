@@ -9,10 +9,13 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, BigInteger> {
-    @Query("SELECT od.menu.menuId, SUM(od.quantity) " +
-            "FROM OrderDetail od " +
-            "GROUP BY od.menu.menuId")
-    List<Object[]> findTotalSoldByMenu();
+    @Query("""
+                SELECT od.menu.menuId, SUM(od.quantity)
+                FROM OrderDetail od
+                WHERE od.order.orderStatus = com.example.food_app.entity.enums.OrderStatus.COMPLETED
+                GROUP BY od.menu.menuId
+            """)
+    List<Object[]> findTotalSoldByMenuCompleted();
 
     List<OrderDetail> findByOrder(Order order);
 }

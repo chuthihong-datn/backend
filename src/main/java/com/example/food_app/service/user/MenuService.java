@@ -25,7 +25,7 @@ public class MenuService {
     private final ToppingRepository toppingRepository;
     private final FlashSaleRepository flashSaleRepository;
 
-    // ================= GET ALL MENU =================
+    // list menu
     public List<MenuResponse> getListMenu() {
 
         List<Menu> menus = menuRepository.findAllByIsActiveIsTrue();
@@ -39,7 +39,7 @@ public class MenuService {
                 .toList();
     }
 
-    // ================= GET BY CATEGORY =================
+    // list menu by category
     public List<MenuResponse> getMenusByCategory(BigInteger categoryId) {
 
         if (!categoryRepository.existsByCategoryIdAndIsActiveIsTrue(categoryId)) {
@@ -58,7 +58,7 @@ public class MenuService {
                 .toList();
     }
 
-    // ================= SEARCH MENU =================
+    // search
     public List<MenuResponse> searchMenus(String keyword) {
 
         List<Menu> menus =
@@ -73,7 +73,7 @@ public class MenuService {
                 .toList();
     }
 
-    // ================= MENU DETAIL =================
+    // menu detail
     public MenuDetailResponse getMenuDetail(BigInteger menuId) {
 
         Menu menu = menuRepository.findByMenuIdAndIsActiveTrue(menuId)
@@ -119,6 +119,29 @@ public class MenuService {
                 .average()
                 .orElse(0);
 
+        // menu đang sale
+        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
+        FlashSale fs = flashSaleMap.get(menu.getMenuId());
+
+        BigDecimal minPrice = calculateMinPrice(menu);
+
+        boolean isFlashSale = false;
+        BigDecimal discountedPrice = null;
+        Integer discountPercent = null;
+        LocalDateTime flashSaleEndTime = null;
+
+        if (fs != null) {
+            isFlashSale = true;
+
+            discountedPrice = applyDiscount(minPrice, fs);
+
+            if ("PERCENT".equals(fs.getDiscountType().name())) {
+                discountPercent = fs.getDiscountValue().intValue();
+            }
+
+            flashSaleEndTime = fs.getEndTime();
+        }
+
         return MenuDetailResponse.builder()
                 .id(menu.getMenuId())
                 .name(menu.getName())
@@ -132,10 +155,13 @@ public class MenuService {
                 .reviewCount(reviewResponses.size())
                 .reviews(reviewResponses)
                 .outOfStock(menu.isOutOfStock())
+                .isFlashSale(isFlashSale)
+                .discountedPrice(discountedPrice)
+                .discountPercent(discountPercent)
+                .flashSaleEndTime(flashSaleEndTime)
                 .build();
     }
 
-    // ================= MAPPING =================
     private MenuResponse mapToMenuResponse(
             Menu menu,
             Map<BigInteger, Float> ratingMap,
@@ -179,10 +205,10 @@ public class MenuService {
                 .build();
     }
 
-    // ================= TOTAL SOLD MAP =================
+    // menu đã bán
     private Map<BigInteger, Long> buildTotalSoldMap() {
 
-        List<Object[]> salesData = orderDetailRepository.findTotalSoldByMenu();
+        List<Object[]> salesData = orderDetailRepository.findTotalSoldByMenuCompleted();
 
         return salesData.stream()
                 .collect(Collectors.toMap(
@@ -191,7 +217,6 @@ public class MenuService {
                 ));
     }
 
-    // ================= FLASH SALE MAP =================
     private Map<BigInteger, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
@@ -215,7 +240,6 @@ public class MenuService {
         return map;
     }
 
-    // ================= RATING MAP =================
     private Map<BigInteger, Float> buildRatingMap(List<Menu> menus) {
 
         List<BigInteger> ids = menus.stream()
@@ -234,7 +258,6 @@ public class MenuService {
                 ));
     }
 
-    // ================= PRICE =================
     private BigDecimal calculateMinPrice(Menu menu) {
 
         BigDecimal basePrice = menu.getBasePrice();
@@ -251,7 +274,6 @@ public class MenuService {
         return basePrice.add(minExtra);
     }
 
-    // ================= DISCOUNT =================
     private BigDecimal applyDiscount(BigDecimal price, FlashSale fs) {
 
         if ("PERCENT".equals(fs.getDiscountType().name())) {
