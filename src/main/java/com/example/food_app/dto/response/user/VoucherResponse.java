@@ -1,0 +1,28 @@
+package com.example.food_app.dto.response.user;
+
+import com.example.food_app.entity.enums.DiscountType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class VoucherResponse {
+    private BigInteger voucherId;
+    private String code;
+    private String title;
+    private String description;
+    private DiscountType discountType;
+    private BigDecimal discountValue;
+    private BigDecimal maxDiscount;
+    private BigDecimal minOrderAmount;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+}

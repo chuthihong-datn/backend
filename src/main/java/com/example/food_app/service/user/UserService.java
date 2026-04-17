@@ -3,12 +3,11 @@ package com.example.food_app.service.user;
 import com.example.food_app.dto.request.user.ProfileUpdateRequest;
 import com.example.food_app.dto.response.user.OrderByUserResponse;
 import com.example.food_app.dto.response.user.ProfileResponse;
-import com.example.food_app.entity.Account;
-import com.example.food_app.entity.Order;
-import com.example.food_app.entity.OrderDetail;
-import com.example.food_app.entity.Topping;
+import com.example.food_app.dto.response.user.VoucherResponse;
+import com.example.food_app.entity.*;
 import com.example.food_app.repository.AccountRepository;
 import com.example.food_app.repository.OrderRepository;
+import com.example.food_app.repository.UserVoucherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +27,7 @@ import java.util.Map;
 public class UserService {
 
     private final AccountRepository accountRepository;
+    private final UserVoucherRepository userVoucherRepository;
     private final Cloudinary cloudinary;
 
     public ProfileResponse getProfile(Account account) {
@@ -212,6 +213,45 @@ public class UserService {
                 .toppings(toppings)
                 .quantity(detail.getQuantity())
                 .itemTotal(detail.getItemTotalPrice())
+                .build();
+    }
+
+    //trả về danh sách voucher còn active và chưa sử dụng theo account user
+    public List<VoucherResponse> getMyVouchers(Account account) {
+
+        if (account == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Chưa đăng nhập"
+            );
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        List<UserVoucher> userVouchers =
+                userVoucherRepository.findValidVouchers(account);
+
+        return userVouchers.stream()
+                .map(UserVoucher::getVoucher)
+                .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
+                .filter(v -> v.getStartDate() == null || !now.isBefore(v.getStartDate()))
+                .filter(v -> v.getEndDate() == null || !now.isAfter(v.getEndDate()))
+                .map(this::mapVoucher)
+                .toList();
+    }
+
+    private VoucherResponse mapVoucher(Voucher v) {
+        return VoucherResponse.builder()
+                .voucherId(v.getVoucherId())
+                .code(v.getCode())
+                .title(v.getTitle())
+                .description(v.getDescription())
+                .discountType(v.getDiscountType())
+                .discountValue(v.getDiscountValue())
+                .maxDiscount(v.getMaxDiscount())
+                .minOrderAmount(v.getMinOrderAmount())
+                .startDate(v.getStartDate())
+                .endDate(v.getEndDate())
                 .build();
     }
 }

@@ -1,5 +1,7 @@
 package com.example.food_app.entity;
 
+import com.example.food_app.entity.enums.DiscountType;
+import com.example.food_app.entity.enums.VoucherType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -33,8 +35,16 @@ public class Voucher {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "discount_percent")
-    private BigDecimal discountPercent;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "voucher_type")
+    private VoucherType voucherType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type")
+    private DiscountType discountType;
+
+    @Column(name = "discount_value")
+    private BigDecimal discountValue;
 
     @Column(name = "max_discount")
     private BigDecimal maxDiscount;

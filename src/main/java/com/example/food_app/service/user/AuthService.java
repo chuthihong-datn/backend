@@ -6,9 +6,13 @@ import com.example.food_app.dto.response.user.LoginResponse;
 import com.example.food_app.dto.response.user.RegisterResponse;
 import com.example.food_app.entity.Account;
 import com.example.food_app.entity.Cart;
+import com.example.food_app.entity.UserVoucher;
+import com.example.food_app.entity.Voucher;
 import com.example.food_app.entity.enums.Role;
 import com.example.food_app.repository.AccountRepository;
 import com.example.food_app.repository.CartRepository;
+import com.example.food_app.repository.UserVoucherRepository;
+import com.example.food_app.repository.VoucherRepository;
 import com.example.food_app.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +26,8 @@ import java.util.Optional;
 public class AuthService {
     private final AccountRepository accountRepository;
     private final CartRepository cartRepository;
+    private final UserVoucherRepository userVoucherRepository;
+    private final VoucherRepository voucherRepository;
     private final JwtUtil jwtUtil;
 
     public ResponseEntity<?> login(LoginRequest request) {
@@ -119,6 +125,21 @@ public class AuthService {
             Cart cart = new Cart();
             cart.setAccount(account);
             cartRepository.save(cart);
+
+            // Tìm voucher NEW50
+            Optional<Voucher> optionalVoucher = voucherRepository.findByCode("NEW50");
+
+            if (optionalVoucher.isPresent()) {
+                Voucher voucher = optionalVoucher.get();
+
+                UserVoucher userVoucher = new UserVoucher();
+                userVoucher.setAccount(account);
+                userVoucher.setVoucher(voucher);
+                userVoucher.setUsed(false);
+                userVoucher.setUsedAt(null);
+
+                userVoucherRepository.save(userVoucher);
+            }
 
             return ResponseEntity.ok(
                     RegisterResponse.builder()

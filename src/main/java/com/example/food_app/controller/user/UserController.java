@@ -3,6 +3,7 @@ package com.example.food_app.controller.user;
 import com.example.food_app.dto.request.user.ProfileUpdateRequest;
 import com.example.food_app.dto.response.user.OrderByUserResponse;
 import com.example.food_app.dto.response.user.ProfileResponse;
+import com.example.food_app.dto.response.user.VoucherResponse;
 import com.example.food_app.entity.Account;
 import com.example.food_app.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,12 @@ public class UserController {
             @AuthenticationPrincipal Account account
     ) {
         return userService.getMyOrderDetail(id, account);
+    }
+
+    @GetMapping("/vouchers")
+    public List<VoucherResponse> getMyVouchers(
+            @AuthenticationPrincipal Account account
+    ) {
+        return userService.getMyVouchers(account);
     }
 }

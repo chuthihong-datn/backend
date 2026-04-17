@@ -29,6 +29,8 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final FlashSaleRepository flashSaleRepository;
     private final VNPayService vnpayService;
+    private final VoucherRepository voucherRepository;
+    private final UserVoucherRepository userVoucherRepository;
 
     @Transactional
     public Object createOrder(OrderRequest request, Account account, String ip) {
@@ -157,12 +159,109 @@ public class OrderService {
 
             orderDetailRepository.save(detail);
         }
+        BigDecimal discountAmount = BigDecimal.ZERO;
 
-        BigDecimal finalAmount = totalAmount.add(order.getShippingFee());
+        if (request.getVoucherCode() != null && !request.getVoucherCode().isBlank()) {
+
+            Voucher voucher = voucherRepository.findByCode(request.getVoucherCode())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND, "Voucher không tồn tại"
+                    ));
+
+            // check active
+            if (!Boolean.TRUE.equals(voucher.getIsActive())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Voucher không khả dụng"
+                );
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+
+            if (voucher.getStartDate() != null && now.isBefore(voucher.getStartDate())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Voucher chưa bắt đầu"
+                );
+            }
+
+            if (voucher.getEndDate() != null && now.isAfter(voucher.getEndDate())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Voucher đã hết hạn"
+                );
+            }
+
+            // check min order
+            if (voucher.getMinOrderAmount() != null &&
+                    totalAmount.compareTo(voucher.getMinOrderAmount()) < 0) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher"
+                );
+            }
+
+            // check user có voucher không
+            UserVoucher userVoucher = userVoucherRepository
+                    .findByAccountAndVoucher(account, voucher)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, "Bạn không sở hữu voucher này"
+                    ));
+
+            if (userVoucher.isUsed()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Voucher đã được sử dụng"
+                );
+            }
+
+            // tính giảm giá
+            if (voucher.getDiscountType() != null) {
+
+                switch (voucher.getDiscountType()) {
+
+                    case PERCENT -> {
+                        if (voucher.getDiscountValue() == null) {
+                            throw new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST, "Voucher không hợp lệ"
+                            );
+                        }
+
+                        discountAmount = totalAmount
+                                .multiply(voucher.getDiscountValue())
+                                .divide(BigDecimal.valueOf(100));
+
+                        if (voucher.getMaxDiscount() != null) {
+                            discountAmount = discountAmount.min(voucher.getMaxDiscount());
+                        }
+                    }
+
+                    case FIXED -> {
+                        if (voucher.getDiscountValue() == null) {
+                            throw new ResponseStatusException(
+                                    HttpStatus.BAD_REQUEST, "Voucher không hợp lệ"
+                            );
+                        }
+
+                        discountAmount = voucher.getDiscountValue();
+
+                        if (discountAmount.compareTo(totalAmount) > 0) {
+                            discountAmount = totalAmount;
+                        }
+                    }
+                }
+            }
+
+            // đánh dấu đã dùng
+            userVoucher.setUsed(true);
+            userVoucher.setUsedAt(LocalDateTime.now());
+            userVoucherRepository.save(userVoucher);
+        }
+
+        BigDecimal finalAmount = totalAmount
+                .subtract(discountAmount)
+                .add(order.getShippingFee());
 
         order.setTotalAmount(totalAmount);
         order.setFinalAmount(finalAmount);
-        order.setDiscountAmount(BigDecimal.ZERO);
+        order.setDiscountAmount(discountAmount);
 
         orderRepository.save(order);
 
