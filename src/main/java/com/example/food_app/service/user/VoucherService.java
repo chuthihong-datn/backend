@@ -25,7 +25,7 @@ public class VoucherService {
         LocalDateTime now = LocalDateTime.now();
 
         List<Voucher> vouchers =
-                voucherRepository.findByIsActiveTrueAndEndDateGreaterThan(now);
+                voucherRepository.findByIsActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(now, now);
 
         return vouchers.stream()
                 .filter(v -> v.getVoucherType() == VoucherType.PUBLIC)

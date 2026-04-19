@@ -34,6 +34,5 @@ public class MenuResponse {
     }
 
     private boolean outOfStock;
-
     private boolean isDeleted;
 }

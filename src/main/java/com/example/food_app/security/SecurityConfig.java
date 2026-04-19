@@ -25,14 +25,16 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/categories/**",
                                 "/menus/**",
-                                "/wards/delivery"
+                                "/wards/delivery",
+                                "/voucher"
                         ).permitAll()
 
                         // api chỉ dành cho khách hàng
                         .requestMatchers("/cart/**",
                                 "/orders/**",
                                 "/user/**",
-                                "/payment/**"
+                                "/payment/**",
+                                "/voucher/{voucherId}/save"
                                 )
                         .hasRole("CUSTOMER")
 

@@ -11,5 +11,8 @@ import java.util.Optional;
 public interface VoucherRepository extends JpaRepository<Voucher, BigInteger> {
     Optional<Voucher> findByCode(String code);
     boolean existsByCode(String code);
-    List<Voucher> findByIsActiveTrueAndEndDateGreaterThan(LocalDateTime now);
+    List<Voucher> findByIsActiveTrueAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            LocalDateTime now1,
+            LocalDateTime now2
+    );
 }

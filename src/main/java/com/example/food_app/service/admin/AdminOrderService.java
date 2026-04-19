@@ -56,10 +56,20 @@ public class AdminOrderService {
             );
         }
 
+        // update order status
         order.setOrderStatus(request.getOrderStatus());
+        if (request.getOrderStatus().name().equals("COMPLETED")) {
 
+            // chỉ set nếu chưa phải PAID
+            if (order.getPaymentStatus() == null ||
+                    !order.getPaymentStatus().name().equals("PAID")) {
+
+                order.setPaymentStatus(
+                        com.example.food_app.entity.enums.PaymentStatus.PAID
+                );
+            }
+        }
         orderRepository.save(order);
-
         return mapToResponse(order);
     }
 

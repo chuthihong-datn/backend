@@ -31,10 +31,12 @@ public class OrderService {
     private final VNPayService vnpayService;
     private final VoucherRepository voucherRepository;
     private final UserVoucherRepository userVoucherRepository;
+    private static final int OPEN_HOUR = 8;
+    private static final int CLOSE_HOUR = 22;
 
     @Transactional
     public Object createOrder(OrderRequest request, Account account, String ip) {
-
+        validateStoreOpen();
         // get cart
         Cart cart = cartRepository.findByAccount(account)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -347,5 +349,17 @@ public class OrderService {
         }
 
         return price.subtract(fs.getDiscountValue());
+    }
+
+    private void validateStoreOpen() {
+
+        int currentHour = LocalDateTime.now().getHour();
+
+        if (currentHour < OPEN_HOUR || currentHour >= CLOSE_HOUR) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cửa hàng chỉ nhận đơn từ 8h đến 22h"
+            );
+        }
     }
 }
