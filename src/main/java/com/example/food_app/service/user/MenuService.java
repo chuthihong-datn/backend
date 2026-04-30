@@ -107,7 +107,11 @@ public class MenuService {
                 .map(r -> ReviewResponse.builder()
                         .userName(r.getAccount().getFullName())
                         .rating(r.getRating())
-                        .comment(r.getComment())
+                        .comment(
+                                Boolean.TRUE.equals(r.getIsDeleted())
+                                        ? "Bình luận đã bị ẩn bởi quản trị viên"
+                                        : r.getComment()
+                        )
                         .createdAt(r.getCreatedAt())
                         .build())
                 .toList();

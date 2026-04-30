@@ -208,6 +208,7 @@ public class UserService {
                 .toList();
 
         return OrderByUserResponse.OrderItemResponse.builder()
+                .orderDetailId(detail.getOrderDetailId())
                 .menuName(detail.getMenu().getName())
                 .sizeName(sizeName)
                 .toppings(toppings)

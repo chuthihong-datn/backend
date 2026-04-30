@@ -70,6 +70,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
         return path.startsWith("/auth")
                 || path.startsWith("/menus")
-                || path.startsWith("/categories");
+                || path.startsWith("/categories")
+                || path.startsWith("/payment/vnpay-return")
+                || path.startsWith("/payment/vnpay-ipn");
     }
 }

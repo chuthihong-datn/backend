@@ -26,6 +26,7 @@ public class SecurityConfig {
                                 "/categories/**",
                                 "/menus/**",
                                 "/wards/delivery",
+                                "/payment/**",
                                 "/voucher"
                         ).permitAll()
 
@@ -33,8 +34,8 @@ public class SecurityConfig {
                         .requestMatchers("/cart/**",
                                 "/orders/**",
                                 "/user/**",
-                                "/payment/**",
-                                "/voucher/{voucherId}/save"
+                                "/voucher/{voucherId}/save",
+                                "/reviews/**"
                                 )
                         .hasRole("CUSTOMER")
 

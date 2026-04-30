@@ -9,6 +9,7 @@ import com.example.food_app.entity.enums.OrderStatus;
 import com.example.food_app.entity.enums.PaymentStatus;
 import com.example.food_app.repository.*;
 import com.example.food_app.util.VNPayUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.List;
@@ -33,19 +35,17 @@ public class PaymentController {
     private final CartItemRepository cartItemRepository;
     private final OrderDetailRepository orderDetailRepository;
 
-    @Transactional
     @GetMapping("/vnpay-return")
-    public ResponseEntity<?> vnpayReturn(@RequestParam Map<String, String> params) {
-
+    @Transactional
+    public void vnpayReturn(
+            @RequestParam Map<String, String> params,
+            HttpServletResponse response
+    ) throws IOException {
         String secureHash = params.remove("vnp_SecureHash");
         params.remove("vnp_SecureHashType");
 
         String signData = VNPayUtil.buildQuery(params);
         String checkHash = VNPayUtil.hmacSHA512(config.getHashSecret(), signData);
-
-        if (!checkHash.equals(secureHash)) {
-            return ResponseEntity.badRequest().body("Invalid signature");
-        }
 
         String orderId = params.get("vnp_TxnRef");
         String responseCode = params.get("vnp_ResponseCode");
@@ -54,15 +54,18 @@ public class PaymentController {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (order.getPaymentStatus() == PaymentStatus.PAID) {
-            return ResponseEntity.ok("Order already processed");
+            response.sendRedirect("http://localhost:3000/?payment-success=true&orderId=" + orderId);
+            return;
         }
 
+        boolean isValid = checkHash.equals(secureHash);
         long vnpAmount = Long.parseLong(params.get("vnp_Amount")) / 100;
-        if (order.getFinalAmount().longValue() != vnpAmount) {
-            return ResponseEntity.badRequest().body("Invalid amount");
-        }
 
-        if ("00".equals(responseCode)) {
+        boolean isSuccess = isValid
+                && "00".equals(responseCode)
+                && order.getFinalAmount().longValue() == vnpAmount;
+
+        if (isSuccess) {
 
             order.setPaymentStatus(PaymentStatus.PAID);
             order.setOrderStatus(OrderStatus.CONFIRMED);
@@ -71,13 +74,12 @@ public class PaymentController {
 
             for (OrderDetail detail : details) {
                 Menu menu = detail.getMenu();
-                int quantity = detail.getQuantity();
 
-                if (menu.getAmount() < quantity) {
+                if (menu.getAmount() < detail.getQuantity()) {
                     throw new RuntimeException("Hết hàng khi thanh toán");
                 }
 
-                menu.setAmount(menu.getAmount() - quantity);
+                menu.setAmount(menu.getAmount() - detail.getQuantity());
                 menuRepository.save(menu);
             }
 
@@ -86,13 +88,16 @@ public class PaymentController {
 
             cartItemRepository.deleteByCart(cart);
 
+            orderRepository.save(order);
+
+            response.sendRedirect("http://localhost:3000/?payment-success=true&orderId=" + orderId);
+
         } else {
             order.setPaymentStatus(PaymentStatus.FAILED);
             order.setOrderStatus(OrderStatus.CANCELLED);
+            orderRepository.save(order);
+
+            response.sendRedirect("http://localhost:3000/?payment-failed=true&orderId=" + orderId + "&code=" + (responseCode != null ? responseCode : "99"));
         }
-
-        orderRepository.save(order);
-
-        return ResponseEntity.ok("Payment processed");
     }
 }

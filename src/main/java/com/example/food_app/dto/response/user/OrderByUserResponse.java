@@ -35,6 +35,7 @@ public class OrderByUserResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class OrderItemResponse {
+        private BigInteger orderDetailId;
         private String menuName;
         private String sizeName;
         private List<String> toppings;

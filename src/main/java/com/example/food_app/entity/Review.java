@@ -9,9 +9,9 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"account_id", "order_detail_id"}))
 @Getter
 @Setter
 @AllArgsConstructor
@@ -28,6 +28,10 @@ public class Review {
     private Order order;
 
     @ManyToOne
+    @JoinColumn(name = "order_detail_id")
+    private OrderDetail orderDetail;
+
+    @ManyToOne
     @JoinColumn(name = "menu_id")
     private Menu menu;
 
@@ -41,6 +45,8 @@ public class Review {
     private String comment;
 
     @CreationTimestamp
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 }

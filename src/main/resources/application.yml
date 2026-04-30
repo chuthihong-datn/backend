@@ -28,7 +28,8 @@ cloudinary:
   api_secret: uAMCw3yDov8yGs6TMwZ1fdKf83U
 
 vnpay:
-  tmnCode: DDD57SWE
-  hashSecret: 6YL9SHTA5OZSEPGCEI07VT3N0NXX49N1
+  tmnCode: MWZ522OD
+  hashSecret: 1UIPJAU0C26AHP8HGBL6EG99J6A3Y5A1
   payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-  returnUrl: http://localhost:8080/api/payment/vnpay-return
+  returnUrl: http://localhost:1503/api/payment/vnpay-return
+#  returnUrl: http://localhost:3000/api/payment/vnpay-return
