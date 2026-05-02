@@ -1,6 +1,6 @@
 package com.example.food_app.service.admin;
 
-import com.example.food_app.dto.request.admin.ReviewResponse;
+import com.example.food_app.dto.response.admin.ReviewResponse;
 import com.example.food_app.entity.Review;
 import com.example.food_app.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;

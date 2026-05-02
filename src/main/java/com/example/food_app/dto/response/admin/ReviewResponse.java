@@ -1,4 +1,4 @@
-package com.example.food_app.dto.request.admin;
+package com.example.food_app.dto.response.admin;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,3 +20,4 @@ public class ReviewResponse {
     private LocalDateTime createdAt;
     private Boolean isDeleted;
 }
+

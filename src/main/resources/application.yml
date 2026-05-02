@@ -32,4 +32,8 @@ vnpay:
   hashSecret: 1UIPJAU0C26AHP8HGBL6EG99J6A3Y5A1
   payUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
   returnUrl: http://localhost:1503/api/payment/vnpay-return
-#  returnUrl: http://localhost:3000/api/payment/vnpay-return
+
+gemini:
+  api:
+    key: AIzaSyA-Pl96LIK8i0q2NBjaNMVQJ8YH61Zsgeg
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent

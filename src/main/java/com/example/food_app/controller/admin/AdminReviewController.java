@@ -1,6 +1,6 @@
 package com.example.food_app.controller.admin;
 
-import com.example.food_app.dto.request.admin.ReviewResponse;
+import com.example.food_app.dto.response.admin.ReviewResponse;
 import com.example.food_app.service.admin.AdminReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

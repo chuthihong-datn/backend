@@ -4,7 +4,7 @@ import com.example.food_app.dto.request.admin.FlashSaleRequest;
 import com.example.food_app.dto.request.admin.VoucherRequest;
 import com.example.food_app.dto.response.admin.FlashSaleResponse;
 import com.example.food_app.dto.response.admin.VoucherResponse;
-import com.example.food_app.service.admin.FlashSaleService;
+import com.example.food_app.service.admin.AdminFlashSaleService;
 import com.example.food_app.service.admin.AdminVoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +15,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/promotions")
 @RequiredArgsConstructor
-public class PromotionController {
+public class AdminPromotionController {
     private final AdminVoucherService voucherService;
-    private final FlashSaleService flashSaleService;
+    private final AdminFlashSaleService flashSaleService;
 
     @PostMapping("/voucher")
     public VoucherResponse create(@RequestBody VoucherRequest request) {

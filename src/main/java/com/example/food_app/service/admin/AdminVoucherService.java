@@ -3,6 +3,7 @@ package com.example.food_app.service.admin;
 import com.example.food_app.dto.request.admin.VoucherRequest;
 import com.example.food_app.dto.response.admin.VoucherResponse;
 import com.example.food_app.entity.Voucher;
+import com.example.food_app.entity.enums.VoucherType;
 import com.example.food_app.repository.VoucherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,7 @@ public class AdminVoucherService {
 
         v.setUsageLimit(r.getUsageLimit());
         v.setIsActive(r.getIsActive());
+        v.setVoucherType(VoucherType.PUBLIC);
 
         return v;
     }
