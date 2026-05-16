@@ -16,7 +16,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class VoucherService {
-
     private final VoucherRepository voucherRepository;
     private final UserVoucherRepository userVoucherRepository;
 
@@ -49,7 +48,6 @@ public class VoucherService {
         }).toList();
     }
 
-    // 2. Lưu voucher
     public Voucher1Response saveVoucher(Account account, Long voucherId) {
 
         Voucher voucher = voucherRepository.findById(
@@ -63,18 +61,15 @@ public class VoucherService {
         res.setCode(voucher.getCode());
         res.setTitle(voucher.getTitle());
 
-        // nếu hết lượt
         if (usedCount >= voucher.getUsageLimit()) {
             res.setOutOfStock(true);
             return res;
         }
 
-        // nếu user đã lưu rồi
         if (userVoucherRepository.existsByAccountAndVoucher(account, voucher)) {
             return res;
         }
 
-        // lưu
         UserVoucher userVoucher = new UserVoucher();
         userVoucher.setAccount(account);
         userVoucher.setVoucher(voucher);

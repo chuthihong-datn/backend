@@ -25,42 +25,39 @@ public class ReviewService {
     @Transactional
     public void createReview(CreateReviewRequest request, Account account) {
 
-        // 1. Lấy order
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng"));
 
-        // 2. Check quyền
         if (!order.getAccount().getAccountId().equals(account.getAccountId())) {
             throw new RuntimeException("Không có quyền");
         }
 
-        // 3. Check trạng thái
         if (order.getOrderStatus() != OrderStatus.COMPLETED) {
             throw new RuntimeException("Chỉ được đánh giá đơn đã hoàn thành");
         }
 
-        // 4. Loop từng item
         for (ReviewItemRequest item : request.getReviews()) {
 
             OrderDetail detail = orderDetailRepository.findById(item.getOrderDetailId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy item"));
 
-            // check thuộc order
             if (!detail.getOrder().getOrderId().equals(order.getOrderId())) {
                 throw new RuntimeException("Item không thuộc đơn hàng");
             }
 
             // check đã review chưa
-            if (reviewRepository.existsByAccountAndOrderDetail(account, detail)) {
-                throw new RuntimeException("Bạn đã đánh giá món này rồi");
+            if (reviewRepository.existsByAccountAndOrderAndMenu(
+                    account,
+                    order,
+                    detail.getMenu()
+            )) {
+                throw new RuntimeException("Bạn đã đánh giá món này trong đơn này rồi");
             }
 
-            // validate rating
             if (item.getRating() < 1 || item.getRating() > 5) {
                 throw new RuntimeException("Rating phải từ 1-5");
             }
 
-            // tạo review
             Review review = new Review();
             review.setOrder(order);
             review.setOrderDetail(detail);

@@ -15,7 +15,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminStatisticService {
-
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
 

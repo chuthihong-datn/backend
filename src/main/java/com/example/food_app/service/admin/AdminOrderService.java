@@ -18,7 +18,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminOrderService {
-
     private final OrderRepository orderRepository;
 
     public List<OrderResponse> getAll() {
@@ -90,6 +89,7 @@ public class AdminOrderService {
                 .shippingFee(order.getShippingFee())
                 .finalAmount(order.getFinalAmount())
                 .orderStatus(order.getOrderStatus())
+                .paymentMethod(order.getPaymentMethod())
                 .paymentStatus(order.getPaymentStatus())
                 .createdAt(order.getCreatedAt())
                 .items(items)

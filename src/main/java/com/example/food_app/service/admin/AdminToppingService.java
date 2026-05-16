@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminToppingService {
-
     private final ToppingRepository toppingRepository;
 
     public List<ToppingResponse> getAll() {

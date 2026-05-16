@@ -19,7 +19,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-
     private final JwtUtil jwtUtil;
     private final AccountRepository accountRepository;
 
@@ -36,6 +35,13 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             if (jwtUtil.validateToken(token)) {
+
+                String type = jwtUtil.getTokenType(token);
+                if (!type.equals("ACCESS")) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String email = jwtUtil.getEmailFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 

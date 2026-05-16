@@ -7,6 +7,7 @@ import com.example.food_app.dto.response.user.VoucherResponse;
 import com.example.food_app.entity.*;
 import com.example.food_app.repository.AccountRepository;
 import com.example.food_app.repository.OrderRepository;
+import com.example.food_app.repository.ReviewRepository;
 import com.example.food_app.repository.UserVoucherRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +26,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
     private final AccountRepository accountRepository;
     private final UserVoucherRepository userVoucherRepository;
+    private final ReviewRepository reviewRepository;
     private final Cloudinary cloudinary;
 
     public ProfileResponse getProfile(Account account) {
@@ -148,7 +149,16 @@ public class UserService {
     private final OrderRepository orderRepository;
 
     public List<OrderByUserResponse> getMyOrders(Account account) {
-        List<Order> orders = orderRepository.findByAccountOrderByCreatedAtDesc(account);
+
+        if (account == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Chưa đăng nhập"
+            );
+        }
+
+        List<Order> orders =
+                orderRepository.findByAccountOrderByCreatedAtDesc(account);
 
         if (orders.isEmpty()) {
             throw new ResponseStatusException(
@@ -158,7 +168,7 @@ public class UserService {
         }
 
         return orders.stream()
-                .map(this::mapToResponse)
+                .map(order -> mapToResponse(order, account))
                 .toList();
     }
 
@@ -166,21 +176,47 @@ public class UserService {
             BigInteger orderId,
             Account account
     ) {
-        Order order = orderRepository.findByOrderIdAndAccount(orderId, account)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy đơn hàng"
-                ));
 
-        return mapToResponse(order);
+        if (account == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Chưa đăng nhập"
+            );
+        }
+
+        Order order =
+                orderRepository.findByOrderIdAndAccount(
+                                orderId,
+                                account
+                        )
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Không tìm thấy đơn hàng"
+                                ));
+
+        return mapToResponse(order, account);
     }
 
-    private OrderByUserResponse mapToResponse(Order order) {
+    private OrderByUserResponse mapToResponse(
+            Order order,
+            Account account
+    ) {
 
         List<OrderByUserResponse.OrderItemResponse> items =
-                order.getOrderDetails().stream()
+                order.getOrderDetails()
+                        .stream()
                         .map(this::mapItem)
                         .toList();
+
+        long totalReview =
+                reviewRepository.countByAccountAndOrder(
+                        account,
+                        order
+                );
+
+        boolean isReviewed =
+                totalReview == order.getOrderDetails().size();
 
         return OrderByUserResponse.builder()
                 .orderId(order.getOrderId())
@@ -190,22 +226,28 @@ public class UserService {
                 .shippingFee(order.getShippingFee())
                 .finalAmount(order.getFinalAmount())
                 .orderStatus(order.getOrderStatus())
+                .paymentMethod(order.getPaymentMethod())
                 .paymentStatus(order.getPaymentStatus())
                 .createdAt(order.getCreatedAt())
+                .isReviewed(isReviewed)
                 .items(items)
                 .build();
     }
 
-    private OrderByUserResponse.OrderItemResponse mapItem(OrderDetail detail) {
+    private OrderByUserResponse.OrderItemResponse mapItem(
+            OrderDetail detail
+    ) {
 
-        String sizeName = detail.getMenuSize() != null
-                ? detail.getMenuSize().getSizeName()
-                : null;
+        String sizeName =
+                detail.getMenuSize() != null
+                        ? detail.getMenuSize().getSizeName()
+                        : null;
 
-        List<String> toppings = detail.getToppings()
-                .stream()
-                .map(Topping::getName)
-                .toList();
+        List<String> toppings =
+                detail.getToppings()
+                        .stream()
+                        .map(Topping::getName)
+                        .toList();
 
         return OrderByUserResponse.OrderItemResponse.builder()
                 .orderDetailId(detail.getOrderDetailId())

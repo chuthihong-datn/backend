@@ -13,14 +13,13 @@ import java.util.Optional;
 
 public interface UserVoucherRepository extends JpaRepository<UserVoucher, BigInteger> {
     Optional<UserVoucher> findByAccountAndVoucher(Account account, Voucher voucher);
-    List<UserVoucher> findByAccountAndIsUsedFalseAndVoucher_IsActiveTrue(Account account);
     @Query("""
-    SELECT uv FROM UserVoucher uv
-    JOIN uv.voucher v
-    WHERE uv.account = :account
-    AND uv.isUsed = false
-    AND v.isActive = true
-""")
+        SELECT uv FROM UserVoucher uv
+        JOIN uv.voucher v
+        WHERE uv.account = :account
+        AND uv.isUsed = false
+        AND v.isActive = true
+    """)
     List<UserVoucher> findValidVouchers(@Param("account") Account account);
     long countByVoucher(Voucher voucher);
     boolean existsByAccountAndVoucher(Account account, Voucher voucher);

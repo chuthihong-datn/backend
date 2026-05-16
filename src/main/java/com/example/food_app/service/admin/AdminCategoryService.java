@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminCategoryService {
-
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
     private final Cloudinary cloudinary;

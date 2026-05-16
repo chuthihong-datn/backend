@@ -10,14 +10,17 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 @Entity
-@Table(name = "reviews",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"account_id", "order_detail_id"}))
+@Table(
+        name = "reviews",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"account_id","order_detail_id"}
+        )
+)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class Review {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")

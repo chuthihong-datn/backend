@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminMenuService {
-
     private final MenuRepository menuRepository;
     private final CategoryRepository categoryRepository;
     private final ToppingRepository toppingRepository;

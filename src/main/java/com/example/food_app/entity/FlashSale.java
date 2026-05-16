@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FlashSale {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "flash_sale_id")
@@ -42,7 +41,6 @@ public class FlashSale {
     @Column(name = "min_order_amount")
     private BigDecimal minOrderAmount;
 
-    // mỗi order chỉ được giảm 1 phần
     @Column(name = "max_quantity_per_order")
     private Integer maxQuantityPerOrder = 1;
 

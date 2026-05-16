@@ -15,7 +15,8 @@ import java.math.BigInteger;
 public class LoginResponse {
     private BigInteger id;
     private String fullName;
-    private String token;
+    private String accessToken;
+    private String refreshToken;
     private String email;
     private String phone;
     private Role role;

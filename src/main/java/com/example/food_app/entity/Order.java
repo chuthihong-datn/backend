@@ -22,7 +22,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Order {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")

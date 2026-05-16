@@ -7,7 +7,6 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 public class FlashSaleEngine {
-
     @Data
     @Builder
     public static class PriceResult {

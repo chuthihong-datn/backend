@@ -16,19 +16,13 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class FlashSaleResponse {
-
     private BigInteger flashSaleId;
     private String title;
-
     private DiscountType discountType;
     private BigDecimal discountValue;
-
     private BigDecimal maxDiscount;
-
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-
     private Boolean isActive;
-
     private List<String> menuNames;
 }

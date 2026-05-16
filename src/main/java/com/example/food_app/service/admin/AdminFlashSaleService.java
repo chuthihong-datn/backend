@@ -17,7 +17,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminFlashSaleService {
-
     private final FlashSaleRepository flashSaleRepository;
     private final MenuRepository menuRepository;
 

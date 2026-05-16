@@ -15,7 +15,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class VNPayService {
-
     private final VNPayConfig config;
 
     public String createPaymentUrl(Order order, String ip) {
@@ -42,7 +41,6 @@ public class VNPayService {
         String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
         params.put("vnp_CreateDate", createDate);
 
-        // build hash
         String query = VNPayUtil.buildQuery(params);
         String hash = VNPayUtil.hmacSHA512(config.getHashSecret(), query);
 

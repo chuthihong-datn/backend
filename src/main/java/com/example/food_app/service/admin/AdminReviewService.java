@@ -12,7 +12,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminReviewService {
-
     private final ReviewRepository reviewRepository;
 
     public List<ReviewResponse> getReviews(BigInteger menuId, Float rating) {

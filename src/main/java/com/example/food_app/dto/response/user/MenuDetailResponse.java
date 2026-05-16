@@ -15,24 +15,18 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class MenuDetailResponse {
-
     private BigInteger id;
     private String name;
     private String description;
     private List<String> images;
-
     private BigDecimal minPrice;
     private Integer amount;
-
     private List<MenuSizeResponse> sizes;
     private List<ToppingResponse> toppings;
-
     private Float rating;
     private Integer reviewCount;
     private List<ReviewResponse> reviews;
-
     private boolean outOfStock;
-
     private Boolean isFlashSale;
     private BigDecimal discountedPrice;
     private Integer discountPercent;

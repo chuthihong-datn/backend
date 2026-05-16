@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserVoucher {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private BigInteger id;

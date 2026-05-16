@@ -16,7 +16,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminWardService {
-
     private final WardRepository wardRepository;
 
     public List<WardResponse> getAll() {

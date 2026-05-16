@@ -21,7 +21,6 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class AdminAccountService {
-
     private final AccountRepository accountRepository;
     private final Cloudinary cloudinary;
 

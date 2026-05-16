@@ -1,7 +1,9 @@
 package com.example.food_app.controller.user;
 
 import com.example.food_app.dto.request.user.LoginRequest;
+import com.example.food_app.dto.request.user.RefreshTokenRequest;
 import com.example.food_app.dto.request.user.RegisterRequest;
+import com.example.food_app.dto.request.user.LogoutRequest;
 import com.example.food_app.service.user.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,15 +14,38 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(
+            @RequestBody LoginRequest request
+    ) {
+
         return authService.login(request);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(
+            @Valid @RequestBody RegisterRequest request
+    ) {
+
         return authService.register(request);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(
+            @RequestBody RefreshTokenRequest request
+    ) {
+
+        return authService.refreshToken(request);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            @RequestBody LogoutRequest request
+    ) {
+
+        return authService.logout(request);
     }
 }

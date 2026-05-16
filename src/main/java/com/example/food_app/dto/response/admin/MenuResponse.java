@@ -17,13 +17,9 @@ public class MenuResponse {
     private BigDecimal basePrice;
     private Integer amount;
     private Boolean isActive;
-
     private List<String> images;
-
     private String categoryName;
-
     private List<String> toppings;
-
     private List<SizeResponse> sizes;
 
     @Getter
@@ -32,7 +28,6 @@ public class MenuResponse {
         private String sizeName;
         private BigDecimal extraPrice;
     }
-
     private boolean outOfStock;
     private boolean isDeleted;
 }

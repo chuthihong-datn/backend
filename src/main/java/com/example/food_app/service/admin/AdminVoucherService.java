@@ -16,7 +16,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AdminVoucherService {
-
     private final VoucherRepository voucherRepository;
 
     // CREATE
