@@ -1,5 +1,6 @@
 package com.example.food_app.repository;
 
+import com.example.food_app.entity.Order;
 import com.example.food_app.entity.Voucher;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,4 +16,5 @@ public interface VoucherRepository extends JpaRepository<Voucher, BigInteger> {
             LocalDateTime now1,
             LocalDateTime now2
     );
+    List<Voucher> findAllByOrderByCreatedAtDesc();
 }

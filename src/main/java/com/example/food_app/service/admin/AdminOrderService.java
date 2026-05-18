@@ -21,7 +21,7 @@ public class AdminOrderService {
     private final OrderRepository orderRepository;
 
     public List<OrderResponse> getAll() {
-        return orderRepository.findAll()
+        return orderRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::mapToResponse)
                 .toList();

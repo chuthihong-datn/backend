@@ -17,7 +17,7 @@ spring:
       max-request-size: 10MB
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -35,5 +35,5 @@ vnpay:
 
 gemini:
   api:
-    key: AIzaSyAaHIK_7s-Lt1CeJ5f76mEUcrPcOA20ZqA
+    key: AIzaSyC7DUZ_8-s7JTo5gb-AK9J8k8u94NleeXg
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent

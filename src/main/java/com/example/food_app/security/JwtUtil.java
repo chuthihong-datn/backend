@@ -20,7 +20,7 @@ public class JwtUtil {
             1000 * 60 * 30;
 
     private static final long REFRESH_EXPIRATION =
-            1000 * 60 * 60 * 7;
+            1000 * 60 * 60 * 24 * 7;
 
     private Key key;
 

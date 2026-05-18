@@ -44,7 +44,7 @@ public class AdminFlashSaleService {
     }
 
     public List<FlashSaleResponse> getAll() {
-        return flashSaleRepository.findAll()
+        return flashSaleRepository.findAllByOrderByCreatedAtDesc()
                 .stream().map(this::mapToResponse).toList();
     }
 

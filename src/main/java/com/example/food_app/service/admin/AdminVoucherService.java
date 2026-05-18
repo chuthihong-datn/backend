@@ -48,7 +48,7 @@ public class AdminVoucherService {
 
     // GET ALL
     public List<VoucherResponse> getAll() {
-        return voucherRepository.findAll()
+        return voucherRepository.findAllByOrderByCreatedAtDesc()
                 .stream().map(this::mapToResponse).toList();
     }
 

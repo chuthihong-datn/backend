@@ -25,4 +25,5 @@ public class VoucherResponse {
     private BigDecimal minOrderAmount;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private Boolean isUsed;
 }

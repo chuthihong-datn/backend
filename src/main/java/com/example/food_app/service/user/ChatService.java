@@ -15,6 +15,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.*;
 
 @Service
@@ -43,20 +45,60 @@ public class ChatService {
 
             String context = buildContext(userMessage, intent);
 
+            String bmiContext = extractBMIContext(userMessage);
+
             String prompt = """
-                Bạn là trợ lý tư vấn nhà hàng FoodyDelivery.
+            Bạn là trợ lý tư vấn nhà hàng FoodyDelivery.
+            
+            Dữ liệu hệ thống:
+            """ + context + """
+            
+            """ + bmiContext + """
+            
+            Hãy:
+            - Trả lời NGẮN GỌN
+            - Tối ưu cho cửa sổ chat nhỏ trên website
+            - Nội dung dễ quét mắt, không quá rộng
+            - Mỗi ý xuống dòng rõ ràng
+            - Không viết đoạn văn dài
+            - Mỗi món/voucher/thông tin cách nhau 1 dòng trống
+            - Chỉ hiển thị thông tin quan trọng
+            - Dùng emoji phù hợp nhưng không quá nhiều
+            - Không dùng markdown như ** hoặc *
+            - Quy tắc format:
+            
+            Nếu là tư vấn món ăn:
+            🍜 [Tên món]
+            ⭐ [rating] | 🔥 [calories] kcal
+            💰 [giá]
+            👉 [lý do ngắn]
 
-                Dữ liệu hệ thống:
-                """ + context + """
-
-                Hãy:
-                - Trả lời NGẮN GỌN
-                - Gợi ý cụ thể món ăn nếu có
-                - Ưu tiên món bán chạy, rating cao, đang sale
-                - Không bịa dữ liệu
-
-                Câu hỏi: """ + userMessage;
-
+            Nếu là voucher:
+            🎟️ [mã voucher]
+            💸 Giảm: [giá trị]
+            🛒 Đơn tối thiểu: [điều kiện]
+            ⏰ HSD: [hạn dùng]
+            
+            Nếu là flash sale:
+            🔥 [tên chương trình]
+            📉 Giảm: [mức giảm]
+            🍜 Món áp dụng: [danh sách]
+            
+            Nếu là giao hàng:
+            🚚 [khu vực]
+            💰 Phí ship: [giá]
+            ✔️ hoặc ❌ trạng thái
+            
+            Nếu là sức khỏe/BMI:
+            📊 BMI: [giá trị]
+            📌 Tình trạng: [kết quả]
+            👉 Gợi ý: [ngắn gọn]
+            - Nếu có BMI thì ưu tiên tư vấn theo tình trạng cơ thể
+            - Sau đó mới ưu tiên món bán chạy, rating cao, đang sale
+            - Không bịa dữ liệu
+            
+            Câu hỏi:
+            """ + userMessage;
             return callGemini(prompt);
 
         } catch (Exception e) {
@@ -153,12 +195,21 @@ public class ChatService {
                         b.getTotalSold() != null ? b.getTotalSold() : 0,
                         a.getTotalSold() != null ? a.getTotalSold() : 0))
                 .limit(15)
-                .map(m -> "🍔 " + m.getName() +
-                        " | Giá: " + m.getMinPrice() +
-                        " | ⭐ " + m.getRating() +
-                        (m.getTotalSold() != null ? " | Đã bán: " + m.getTotalSold() : "") +
-                        (m.isFlashSale() ? " | 🔥 SALE " + m.getDiscountPercent() + "%" : "") +
-                        (m.isOutOfStock() ? " | Hết hàng" : "")
+                .map(m -> "🍔 " + m.getName()
+                        + " | Giá: " + m.getMinPrice()
+                        + " | ⭐ " + m.getRating()
+                        + (m.getCalories() != null
+                        ? " | Calories: " + m.getCalories() + " kcal"
+                        : "")
+                        + (m.getTotalSold() != null
+                        ? " | Đã bán: " + m.getTotalSold()
+                        : "")
+                        + (m.isFlashSale()
+                        ? " | 🔥 SALE " + m.getDiscountPercent() + "%"
+                        : "")
+                        + (m.isOutOfStock()
+                        ? " | Hết hàng"
+                        : "")
                 )
                 .reduce("MENU:\n", (a, b) -> a + b + "\n");
     }
@@ -242,7 +293,6 @@ public class ChatService {
                     + " | Phí ship: " + w.getShippingFee() + "đ";
         }
 
-        // fallback: list chung
         return buildDeliveryContext();
     }
 
@@ -263,6 +313,55 @@ public class ChatService {
                 );
 
         return context.toString();
+    }
+
+    private String extractBMIContext(String message) {
+
+        String msg = message.toLowerCase();
+
+        try {
+
+            Pattern p = Pattern.compile("(\\d+)m(\\d+).*?(\\d+)\\s*kg");
+            Matcher m = p.matcher(msg);
+
+            if (m.find()) {
+
+                int meter = Integer.parseInt(m.group(1));
+                int cm = Integer.parseInt(m.group(2));
+                int weight = Integer.parseInt(m.group(3));
+
+                double height = meter + (cm / 100.0);
+
+                double bmi = weight / (height * height);
+
+                String status;
+
+                if (bmi < 18.5)
+                    status = "Thiếu cân";
+                else if (bmi < 25)
+                    status = "Bình thường";
+                else if (bmi < 30)
+                    status = "Thừa cân";
+                else
+                    status = "Béo phì";
+
+                return """
+                THÔNG TIN NGƯỜI DÙNG:
+                - BMI: %.1f
+                - Tình trạng: %s
+
+                Quy tắc:
+                - Thiếu cân → ưu tiên món giàu năng lượng
+                - Bình thường → cân bằng dinh dưỡng
+                - Thừa cân → ưu tiên ít calories
+                """.formatted(bmi, status);
+            }
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+        return "";
     }
 
     // gemini

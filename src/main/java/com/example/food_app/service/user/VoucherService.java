@@ -29,23 +29,26 @@ public class VoucherService {
         return vouchers.stream()
                 .filter(v -> v.getVoucherType() == VoucherType.PUBLIC)
                 .map(voucher -> {
-            long usedCount = userVoucherRepository.countByVoucher(voucher);
 
-            Voucher1Response res = new Voucher1Response();
-            res.setVoucherId(voucher.getVoucherId());
-            res.setCode(voucher.getCode());
-            res.setTitle(voucher.getTitle());
-            res.setDescription(voucher.getDescription());
-            res.setDiscountType(voucher.getDiscountType().name());
-            res.setDiscountValue(voucher.getDiscountValue());
-            res.setMaxDiscount(voucher.getMaxDiscount());
-            res.setMinOrderAmount(voucher.getMinOrderAmount());
-            res.setStartDate(voucher.getStartDate());
-            res.setEndDate(voucher.getEndDate());
-            res.setOutOfStock(usedCount >= voucher.getUsageLimit());
+                    long usedCount = userVoucherRepository.countByVoucher(voucher);
 
-            return res;
-        }).toList();
+                    Voucher1Response res = new Voucher1Response();
+
+                    res.setVoucherId(voucher.getVoucherId());
+                    res.setCode(voucher.getCode());
+                    res.setTitle(voucher.getTitle());
+                    res.setDescription(voucher.getDescription());
+                    res.setDiscountType(voucher.getDiscountType().name());
+                    res.setDiscountValue(voucher.getDiscountValue());
+                    res.setMaxDiscount(voucher.getMaxDiscount());
+                    res.setMinOrderAmount(voucher.getMinOrderAmount());
+                    res.setStartDate(voucher.getStartDate());
+                    res.setEndDate(voucher.getEndDate());
+                    res.setOutOfStock(usedCount >= voucher.getUsageLimit());
+
+                    return res;
+                })
+                .toList();
     }
 
     public Voucher1Response saveVoucher(Account account, Long voucherId) {

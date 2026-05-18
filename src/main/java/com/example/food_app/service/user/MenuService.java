@@ -206,6 +206,7 @@ public class MenuService {
                 .discountedPrice(discountedPrice)
                 .discountPercent(discountPercent)
                 .flashSaleEndTime(flashSaleEndTime)
+                .calories(menu.getCalories())
                 .build();
     }
 

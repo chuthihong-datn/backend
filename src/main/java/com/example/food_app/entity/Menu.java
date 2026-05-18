@@ -75,4 +75,7 @@ public class Menu {
     }
 
     private boolean isDeleted = false;
+
+    @Column(name = "calories")
+    private Integer calories;
 }

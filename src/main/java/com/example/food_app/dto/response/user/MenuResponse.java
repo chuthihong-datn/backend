@@ -27,4 +27,5 @@ public class MenuResponse {
     private Integer discountPercent;
     private LocalDateTime flashSaleEndTime;
     private Long totalSold;
+    private Integer calories;
 }

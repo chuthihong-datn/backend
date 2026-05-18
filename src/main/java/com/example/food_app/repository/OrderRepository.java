@@ -48,4 +48,5 @@ public interface OrderRepository extends JpaRepository<Order, BigInteger> {
         ORDER BY FUNCTION('YEAR', o.createdAt), FUNCTION('MONTH', o.createdAt)
     """)
     List<Object[]> getRevenueByMonth();
+    List<Order> findAllByOrderByCreatedAtDesc();
 }

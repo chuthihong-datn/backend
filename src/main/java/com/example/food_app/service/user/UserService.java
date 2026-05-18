@@ -275,15 +275,32 @@ public class UserService {
                 userVoucherRepository.findValidVouchers(account);
 
         return userVouchers.stream()
-                .map(UserVoucher::getVoucher)
-                .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
-                .filter(v -> v.getStartDate() == null || !now.isBefore(v.getStartDate()))
-                .filter(v -> v.getEndDate() == null || !now.isAfter(v.getEndDate()))
+                .filter(uv -> !uv.isUsed())
+                .filter(uv ->
+                        Boolean.TRUE.equals(
+                                uv.getVoucher().getIsActive()
+                        )
+                )
+                .filter(uv ->
+                        uv.getVoucher().getStartDate() == null
+                                || !now.isBefore(
+                                uv.getVoucher().getStartDate()
+                        )
+                )
+                .filter(uv ->
+                        uv.getVoucher().getEndDate() == null
+                                || !now.isAfter(
+                                uv.getVoucher().getEndDate()
+                        )
+                )
                 .map(this::mapVoucher)
                 .toList();
     }
 
-    private VoucherResponse mapVoucher(Voucher v) {
+    private VoucherResponse mapVoucher(UserVoucher uv) {
+
+        Voucher v = uv.getVoucher();
+
         return VoucherResponse.builder()
                 .voucherId(v.getVoucherId())
                 .code(v.getCode())
@@ -295,6 +312,7 @@ public class UserService {
                 .minOrderAmount(v.getMinOrderAmount())
                 .startDate(v.getStartDate())
                 .endDate(v.getEndDate())
+                .isUsed(uv.isUsed())
                 .build();
     }
 }
