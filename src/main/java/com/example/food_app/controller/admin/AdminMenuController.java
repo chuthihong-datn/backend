@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
 
 @RestController
 @RequestMapping("/admin/menus")
@@ -22,7 +21,7 @@ public class AdminMenuController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getDetail(@PathVariable BigInteger id) {
+    public ResponseEntity<?> getDetail(@PathVariable Long id) {
         return ResponseEntity.ok(menuService.getDetail(id));
     }
 
@@ -36,7 +35,7 @@ public class AdminMenuController {
 
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<?> update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestPart("data") MenuRequest request,
             @RequestPart(value = "files", required = false) MultipartFile[] files
     ) {
@@ -44,7 +43,7 @@ public class AdminMenuController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable BigInteger id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         menuService.delete(id);
         return ResponseEntity.ok("Xóa thành công");
     }

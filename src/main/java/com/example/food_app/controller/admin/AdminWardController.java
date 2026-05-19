@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 
 @RestController
 @RequestMapping("/admin/wards")
@@ -27,7 +26,7 @@ public class AdminWardController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestBody WardRequest request
     ) {
         return ResponseEntity.ok(wardService.update(id, request));

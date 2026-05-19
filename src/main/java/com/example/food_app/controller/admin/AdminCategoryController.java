@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -33,7 +32,7 @@ public class AdminCategoryController {
 
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<CategoryResponse> update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestPart("data") CategoryRequest request,
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
@@ -41,7 +40,7 @@ public class AdminCategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable BigInteger id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         adminCategoryService.delete(id);
         return ResponseEntity.ok("Xóa thành công");
     }

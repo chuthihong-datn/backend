@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -33,7 +32,7 @@ public class AdminWardService {
     }
 
     @Transactional
-    public WardResponse update(BigInteger id, WardRequest request) {
+    public WardResponse update(Long id, WardRequest request) {
 
         Ward ward = wardRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -57,7 +56,7 @@ public class AdminWardService {
     }
 
     @Transactional
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
 
         Ward ward = wardRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

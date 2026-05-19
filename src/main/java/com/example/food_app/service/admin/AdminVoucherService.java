@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -31,7 +30,7 @@ public class AdminVoucherService {
     }
 
     // UPDATE
-    public VoucherResponse update(BigInteger id, VoucherRequest request) {
+    public VoucherResponse update(Long id, VoucherRequest request) {
 
         Voucher v = voucherRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy voucher"));
@@ -42,7 +41,7 @@ public class AdminVoucherService {
     }
 
     // DELETE
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
         voucherRepository.deleteById(id);
     }
 

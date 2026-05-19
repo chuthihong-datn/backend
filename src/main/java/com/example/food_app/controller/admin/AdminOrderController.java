@@ -6,7 +6,6 @@ import com.example.food_app.service.admin.AdminOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -22,13 +21,13 @@ public class AdminOrderController {
     }
 
     @GetMapping("/{id}")
-    public OrderResponse getDetail(@PathVariable BigInteger id) {
+    public OrderResponse getDetail(@PathVariable Long id) {
         return adminOrderService.getDetail(id);
     }
 
     @PutMapping("/{id}/status")
     public OrderResponse updateStatus(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestBody UpdateOrderRequest request
     ) {
         return adminOrderService.updateStatus(id, request);

@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -13,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CreateReviewRequest {
-    private BigInteger orderId;
+    private Long orderId;
     private List<ReviewItemRequest> reviews;
 }

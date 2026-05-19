@@ -6,6 +6,7 @@ import com.example.food_app.entity.enums.OrderStatus;
 import com.example.food_app.entity.enums.PaymentMethod;
 import com.example.food_app.entity.enums.PaymentStatus;
 import com.example.food_app.repository.*;
+import com.example.food_app.service.notification.OrderNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -31,6 +31,7 @@ public class OrderService {
     private final VNPayService vnpayService;
     private final VoucherRepository voucherRepository;
     private final UserVoucherRepository userVoucherRepository;
+    private final OrderNotificationService orderNotificationService;
     private static final int OPEN_HOUR = 8;
     private static final int CLOSE_HOUR = 22;
 
@@ -75,7 +76,7 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
 
         BigDecimal rawTotal = BigDecimal.ZERO;
 
@@ -266,6 +267,7 @@ public class OrderService {
         order.setDiscountAmount(discountAmount);
 
         orderRepository.save(order);
+        orderNotificationService.notifyAdminNewOrder(order);
 
         // VNPay
         if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
@@ -315,10 +317,10 @@ public class OrderService {
         return base.add(size).add(topping);
     }
 
-    private Map<BigInteger, FlashSale> buildFlashSaleMap() {
+    private Map<Long, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
-        Map<BigInteger, FlashSale> map = new HashMap<>();
+        Map<Long, FlashSale> map = new HashMap<>();
 
         flashSaleRepository.findAll().stream()
                 .filter(fs -> Boolean.TRUE.equals(fs.getIsActive()))

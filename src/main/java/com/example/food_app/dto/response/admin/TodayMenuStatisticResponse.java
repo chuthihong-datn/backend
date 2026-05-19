@@ -5,14 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class TodayMenuStatisticResponse {
-    private BigInteger menuId;
+    private Long menuId;
     private String menuName;
     private Long totalQuantity;
 }

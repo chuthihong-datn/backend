@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Data
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class ReviewResponse {
-    private BigInteger reviewId;
+    private Long reviewId;
     private String menuName;
     private String userName;
     private Float rating;

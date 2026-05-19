@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +30,7 @@ public class AdminAccountService {
                 .toList();
     }
 
-    public AccountResponse getDetail(BigInteger id) {
+    public AccountResponse getDetail(Long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -43,7 +42,7 @@ public class AdminAccountService {
 
     @Transactional
     public AccountResponse update(
-            BigInteger id,
+            Long id,
             AccountUpdateRequest request,
             MultipartFile avatarFile
     ) {
@@ -79,7 +78,7 @@ public class AdminAccountService {
     }
 
     @Transactional
-    public void disable(BigInteger id) {
+    public void disable(Long id) {
 
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

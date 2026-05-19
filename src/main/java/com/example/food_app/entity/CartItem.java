@@ -7,7 +7,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,7 +19,7 @@ import java.util.List;
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private BigInteger cartItemId;
+    private Long cartItemId;
 
     @ManyToOne
     @JoinColumn(name = "cart_id", nullable = false)

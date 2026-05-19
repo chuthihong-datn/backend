@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,7 +37,7 @@ public class AdminMenuService {
                 .toList();
     }
 
-    public MenuResponse getDetail(BigInteger id) {
+    public MenuResponse getDetail(Long id) {
         Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Không tìm thấy menu"
@@ -100,7 +99,7 @@ public class AdminMenuService {
     }
 
     @Transactional
-    public MenuResponse update(BigInteger id, MenuRequest request, MultipartFile[] files) {
+    public MenuResponse update(Long id, MenuRequest request, MultipartFile[] files) {
 
         Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -171,7 +170,7 @@ public class AdminMenuService {
     }
 
     @Transactional
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
 
         Menu menu = menuRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

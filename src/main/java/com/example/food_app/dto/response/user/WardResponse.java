@@ -5,14 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class WardResponse {
-    private BigInteger wardId;
+    private Long wardId;
     private String name;
     private boolean isDelivery;
     private Integer shippingFee;

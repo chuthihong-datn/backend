@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class MenuSizeResponse {
-    private BigInteger id;
+    private Long id;
     private String name;
     private BigDecimal extraPrice;
 }

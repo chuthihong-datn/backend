@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +20,7 @@ public class Ward {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ward_id")
-    private BigInteger wardId;
+    private Long wardId;
 
     @Column(name = "ward_code", nullable = false, unique = true)
     private String wardCode;

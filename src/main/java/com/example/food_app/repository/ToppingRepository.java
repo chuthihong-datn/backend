@@ -4,10 +4,9 @@ import com.example.food_app.entity.Topping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.math.BigInteger;
 import java.util.List;
 
-public interface ToppingRepository extends JpaRepository<Topping, BigInteger> {
+public interface ToppingRepository extends JpaRepository<Topping, Long> {
     @Query("""
         SELECT t FROM Topping t
         JOIN t.menus m
@@ -15,6 +14,6 @@ public interface ToppingRepository extends JpaRepository<Topping, BigInteger> {
         AND t.outOfStock = false
         AND t.isActive = true
     """)
-    List<Topping> findAvailableToppingsByMenuId(BigInteger menuId);
+    List<Topping> findAvailableToppingsByMenuId(Long menuId);
     List<Topping> findByNameContainingIgnoreCase(String keyword);
 }

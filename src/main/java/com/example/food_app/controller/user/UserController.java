@@ -12,7 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -49,7 +48,7 @@ public class UserController {
 
     @GetMapping("/order/{id}")
     public OrderByUserResponse getDetail(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @AuthenticationPrincipal Account account
     ) {
         return userService.getMyOrderDetail(id, account);

@@ -3,7 +3,6 @@ package com.example.food_app.dto.request.admin;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -11,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class MenuRequest {
-    private BigInteger categoryId;
+    private Long categoryId;
     private String name;
     private String description;
     private BigDecimal basePrice;
@@ -19,7 +18,7 @@ public class MenuRequest {
 
     private List<String> images;
 
-    private List<BigInteger> toppingIds;
+    private List<Long> toppingIds;
 
     private List<MenuSizeRequest> sizes;
 

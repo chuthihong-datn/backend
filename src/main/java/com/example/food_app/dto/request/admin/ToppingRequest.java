@@ -6,14 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class ToppingRequest {
-    private BigInteger toppingId;
+    private Long toppingId;
     private String name;
     private BigDecimal price;
     private Boolean isActive;

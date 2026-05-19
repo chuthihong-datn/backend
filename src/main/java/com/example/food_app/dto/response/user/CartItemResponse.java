@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -14,8 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class CartItemResponse {
-    private BigInteger cartItemId;
-    private BigInteger menuId;
+    private Long cartItemId;
+    private Long menuId;
     private String menuName;
     private String image;
     private String sizeName;

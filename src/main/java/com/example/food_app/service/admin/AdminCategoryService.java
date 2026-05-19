@@ -15,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,7 +72,7 @@ public class AdminCategoryService {
 
     @Transactional
     public CategoryResponse update(
-            BigInteger id,
+            Long id,
             CategoryRequest request,
             MultipartFile file
     ) {
@@ -131,7 +130,7 @@ public class AdminCategoryService {
     }
 
     @Transactional
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

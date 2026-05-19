@@ -3,7 +3,6 @@ package com.example.food_app.dto.response.admin;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -11,7 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class MenuResponse {
-    private BigInteger menuId;
+    private Long menuId;
     private String name;
     private String description;
     private BigDecimal basePrice;

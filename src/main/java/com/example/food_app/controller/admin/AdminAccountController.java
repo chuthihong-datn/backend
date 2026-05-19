@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -26,14 +25,14 @@ public class AdminAccountController {
 
     @GetMapping("/{id}")
     public ResponseEntity<AccountResponse> getDetail(
-            @PathVariable BigInteger id
+            @PathVariable Long id
     ) {
         return ResponseEntity.ok(adminAccountService.getDetail(id));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AccountResponse> update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestPart("data") AccountUpdateRequest request,
             @RequestPart(value = "avatar", required = false) MultipartFile avatar
     ) {
@@ -44,7 +43,7 @@ public class AdminAccountController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> disable(
-            @PathVariable BigInteger id
+            @PathVariable Long id
     ) {
         adminAccountService.disable(id);
 

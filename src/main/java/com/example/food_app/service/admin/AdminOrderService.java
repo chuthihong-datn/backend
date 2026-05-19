@@ -5,20 +5,23 @@ import com.example.food_app.dto.response.admin.OrderResponse;
 import com.example.food_app.entity.Order;
 import com.example.food_app.entity.OrderDetail;
 import com.example.food_app.entity.Topping;
+import com.example.food_app.entity.enums.OrderStatus;
+import com.example.food_app.entity.enums.PaymentStatus;
 import com.example.food_app.repository.OrderRepository;
+import com.example.food_app.service.notification.OrderNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AdminOrderService {
     private final OrderRepository orderRepository;
+    private final OrderNotificationService orderNotificationService;
 
     public List<OrderResponse> getAll() {
         return orderRepository.findAllByOrderByCreatedAtDesc()
@@ -27,7 +30,7 @@ public class AdminOrderService {
                 .toList();
     }
 
-    public OrderResponse getDetail(BigInteger orderId) {
+    public OrderResponse getDetail(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -39,7 +42,7 @@ public class AdminOrderService {
 
     @Transactional
     public OrderResponse updateStatus(
-            BigInteger orderId,
+            Long orderId,
             UpdateOrderRequest request
     ) {
 
@@ -55,6 +58,9 @@ public class AdminOrderService {
             );
         }
 
+        OrderStatus previousOrderStatus = order.getOrderStatus();
+        PaymentStatus previousPaymentStatus = order.getPaymentStatus();
+
         // update order status
         order.setOrderStatus(request.getOrderStatus());
         if (request.getOrderStatus().name().equals("COMPLETED")) {
@@ -69,6 +75,12 @@ public class AdminOrderService {
             }
         }
         orderRepository.save(order);
+        orderNotificationService.notifyCustomerOrderStatusChanged(order, previousOrderStatus);
+
+        if (previousPaymentStatus != order.getPaymentStatus()) {
+            orderNotificationService.notifyAdminPaymentUpdated(order);
+        }
+
         return mapToResponse(order);
     }
 

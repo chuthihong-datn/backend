@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -29,14 +28,14 @@ public class AdminToppingController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ToppingResponse> update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestBody ToppingRequest request
     ) {
         return ResponseEntity.ok(toppingService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable BigInteger id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         toppingService.delete(id);
         return ResponseEntity.ok("Xóa thành công");
     }

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class FlashSaleResponse {
-    private BigInteger flashSaleId;
+    private Long flashSaleId;
     private String title;
     private DiscountType discountType;
     private BigDecimal discountValue;

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -30,9 +29,9 @@ public class MenuService {
 
         List<Menu> menus = menuRepository.findAllByIsActiveIsTrue();
 
-        Map<BigInteger, Float> ratingMap = buildRatingMap(menus);
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
-        Map<BigInteger, Long> totalSoldMap = buildTotalSoldMap();
+        Map<Long, Float> ratingMap = buildRatingMap(menus);
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, Long> totalSoldMap = buildTotalSoldMap();
 
         return menus.stream()
                 .map(menu -> mapToMenuResponse(menu, ratingMap, flashSaleMap, totalSoldMap))
@@ -40,7 +39,7 @@ public class MenuService {
     }
 
     // list menu by category
-    public List<MenuResponse> getMenusByCategory(BigInteger categoryId) {
+    public List<MenuResponse> getMenusByCategory(Long categoryId) {
 
         if (!categoryRepository.existsByCategoryIdAndIsActiveIsTrue(categoryId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category không tồn tại");
@@ -49,9 +48,9 @@ public class MenuService {
         List<Menu> menus =
                 menuRepository.findByCategory_CategoryIdAndIsActiveTrue(categoryId);
 
-        Map<BigInteger, Float> ratingMap = buildRatingMap(menus);
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
-        Map<BigInteger, Long> totalSoldMap = buildTotalSoldMap();
+        Map<Long, Float> ratingMap = buildRatingMap(menus);
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, Long> totalSoldMap = buildTotalSoldMap();
 
         return menus.stream()
                 .map(menu -> mapToMenuResponse(menu, ratingMap, flashSaleMap, totalSoldMap))
@@ -64,9 +63,9 @@ public class MenuService {
         List<Menu> menus =
                 menuRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(keyword);
 
-        Map<BigInteger, Float> ratingMap = buildRatingMap(menus);
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
-        Map<BigInteger, Long> totalSoldMap = buildTotalSoldMap();
+        Map<Long, Float> ratingMap = buildRatingMap(menus);
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, Long> totalSoldMap = buildTotalSoldMap();
 
         return menus.stream()
                 .map(menu -> mapToMenuResponse(menu, ratingMap, flashSaleMap, totalSoldMap))
@@ -74,7 +73,7 @@ public class MenuService {
     }
 
     // menu detail
-    public MenuDetailResponse getMenuDetail(BigInteger menuId) {
+    public MenuDetailResponse getMenuDetail(Long menuId) {
 
         Menu menu = menuRepository.findByMenuIdAndIsActiveTrue(menuId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -124,7 +123,7 @@ public class MenuService {
                 .orElse(0);
 
         // menu đang sale
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
         FlashSale fs = flashSaleMap.get(menu.getMenuId());
 
         BigDecimal minPrice = calculateMinPrice(menu);
@@ -168,9 +167,9 @@ public class MenuService {
 
     private MenuResponse mapToMenuResponse(
             Menu menu,
-            Map<BigInteger, Float> ratingMap,
-            Map<BigInteger, FlashSale> flashSaleMap,
-            Map<BigInteger, Long> totalSoldMap
+            Map<Long, Float> ratingMap,
+            Map<Long, FlashSale> flashSaleMap,
+            Map<Long, Long> totalSoldMap
     ) {
 
         BigDecimal minPrice = calculateMinPrice(menu);
@@ -211,18 +210,18 @@ public class MenuService {
     }
 
     // menu đã bán
-    private Map<BigInteger, Long> buildTotalSoldMap() {
+    private Map<Long, Long> buildTotalSoldMap() {
 
         List<Object[]> salesData = orderDetailRepository.findTotalSoldByMenuCompleted();
 
         return salesData.stream()
                 .collect(Collectors.toMap(
-                        obj -> (BigInteger) obj[0],
+                        obj -> ((Number) obj[0]).longValue(),
                         obj -> ((Number) obj[1]).longValue()
                 ));
     }
 
-    private Map<BigInteger, FlashSale> buildFlashSaleMap() {
+    private Map<Long, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -232,7 +231,7 @@ public class MenuService {
                 .filter(fs -> now.isAfter(fs.getStartTime()) && now.isBefore(fs.getEndTime()))
                 .toList();
 
-        Map<BigInteger, FlashSale> map = new HashMap<>();
+        Map<Long, FlashSale> map = new HashMap<>();
 
         for (FlashSale fs : activeSales) {
             if (fs.getItems() == null) continue;
@@ -245,9 +244,9 @@ public class MenuService {
         return map;
     }
 
-    private Map<BigInteger, Float> buildRatingMap(List<Menu> menus) {
+    private Map<Long, Float> buildRatingMap(List<Menu> menus) {
 
-        List<BigInteger> ids = menus.stream()
+        List<Long> ids = menus.stream()
                 .map(Menu::getMenuId)
                 .toList();
 

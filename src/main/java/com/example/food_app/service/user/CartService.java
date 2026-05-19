@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -77,7 +76,7 @@ public class CartService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy giỏ"));
 
         List<CartItem> cartItems = cartItemRepository.findByCart(cart);
-        Map<BigInteger, FlashSale> flashSaleMap = buildFlashSaleMap();
+        Map<Long, FlashSale> flashSaleMap = buildFlashSaleMap();
 
         // tổng tiền
         BigDecimal rawTotal = cartItems.stream()
@@ -182,11 +181,11 @@ public class CartService {
     }
 
     // flash sale map
-    private Map<BigInteger, FlashSale> buildFlashSaleMap() {
+    private Map<Long, FlashSale> buildFlashSaleMap() {
 
         LocalDateTime now = LocalDateTime.now();
 
-        Map<BigInteger, FlashSale> map = new HashMap<>();
+        Map<Long, FlashSale> map = new HashMap<>();
 
         flashSaleRepository.findAll().stream()
                 .filter(fs -> Boolean.TRUE.equals(fs.getIsActive()))
@@ -219,7 +218,7 @@ public class CartService {
 
     // update số lượng item
     @Transactional
-    public void updateQuantity(Account account, BigInteger cartItemId, Integer quantity) {
+    public void updateQuantity(Account account, Long cartItemId, Integer quantity) {
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy item"));
@@ -243,7 +242,7 @@ public class CartService {
 
     // xóa món trong giỏ
     @Transactional
-    public void deleteCartItem(Account account, BigInteger cartItemId) {
+    public void deleteCartItem(Account account, Long cartItemId) {
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy item"));

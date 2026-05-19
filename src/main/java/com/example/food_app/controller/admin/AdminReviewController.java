@@ -5,7 +5,6 @@ import com.example.food_app.service.admin.AdminReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -17,20 +16,20 @@ public class AdminReviewController {
 
     @GetMapping
     public List<ReviewResponse> getReviews(
-            @RequestParam(required = false) BigInteger menuId,
+            @RequestParam(required = false) Long menuId,
             @RequestParam(required = false) Float rating
     ) {
         return reviewService.getReviews(menuId, rating);
     }
 
     @PutMapping("/{id}/hide")
-    public String hideReview(@PathVariable BigInteger id) {
+    public String hideReview(@PathVariable Long id) {
         reviewService.hideReview(id);
         return "Đã ẩn review";
     }
 
     @DeleteMapping("/{id}")
-    public String deleteReview(@PathVariable BigInteger id) {
+    public String deleteReview(@PathVariable Long id) {
         reviewService.hideReview(id);
         return "Đã ẩn review";
     }

@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -29,7 +28,7 @@ public class AdminFlashSaleService {
         return mapToResponse(flashSaleRepository.save(fs));
     }
 
-    public FlashSaleResponse update(BigInteger id, FlashSaleRequest request) {
+    public FlashSaleResponse update(Long id, FlashSaleRequest request) {
 
         FlashSale fs = flashSaleRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy flash sale"));
@@ -39,7 +38,7 @@ public class AdminFlashSaleService {
         return mapToResponse(flashSaleRepository.save(fs));
     }
 
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
         flashSaleRepository.deleteById(id);
     }
 

@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -22,12 +21,12 @@ public class MenuController {
     }
 
     @GetMapping("/category/{id}")
-    public List<MenuResponse> getListMenuByCategory(@PathVariable BigInteger id){
+    public List<MenuResponse> getListMenuByCategory(@PathVariable Long id){
         return menuService.getMenusByCategory(id);
     }
 
     @GetMapping("/{id}")
-    public MenuDetailResponse getMenuDetail(@PathVariable BigInteger id){
+    public MenuDetailResponse getMenuDetail(@PathVariable Long id){
         return menuService.getMenuDetail(id);
     }
 

@@ -9,7 +9,6 @@ import com.example.food_app.service.admin.AdminVoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -26,14 +25,14 @@ public class AdminPromotionController {
 
     @PutMapping("/voucher/{id}")
     public VoucherResponse update(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestBody VoucherRequest request
     ) {
         return voucherService.update(id, request);
     }
 
     @DeleteMapping("/voucher/{id}")
-    public void delete(@PathVariable BigInteger id) {
+    public void delete(@PathVariable Long id) {
         voucherService.delete(id);
     }
 
@@ -49,14 +48,14 @@ public class AdminPromotionController {
 
     @PutMapping("/flash-sale/{id}")
     public FlashSaleResponse update1(
-            @PathVariable BigInteger id,
+            @PathVariable Long id,
             @RequestBody FlashSaleRequest request
     ) {
         return flashSaleService.update(id, request);
     }
 
     @DeleteMapping("/flash-sale/{id}")
-    public void delete1(@PathVariable BigInteger id) {
+    public void delete1(@PathVariable Long id) {
         flashSaleService.delete(id);
     }
 

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 public class UserVoucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private BigInteger id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "account_id", nullable = false)

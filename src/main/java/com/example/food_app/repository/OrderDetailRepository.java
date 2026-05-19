@@ -6,11 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface OrderDetailRepository extends JpaRepository<OrderDetail, BigInteger> {
+public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
     @Query("""
                 SELECT od.menu.menuId, SUM(od.quantity)
                 FROM OrderDetail od

@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,5 +33,5 @@ public class FlashSaleRequest {
 
     private Boolean isActive;
 
-    private List<BigInteger> menuIds;
+    private List<Long> menuIds;
 }

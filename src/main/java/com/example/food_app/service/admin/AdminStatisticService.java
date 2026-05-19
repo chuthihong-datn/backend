@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,7 +66,7 @@ public class AdminStatisticService {
         return orderDetailRepository.getTodaySoldMenu(start, end)
                 .stream()
                 .map(o -> new TodayMenuStatisticResponse(
-                        (BigInteger) o[0],
+                        ((Number) o[0]).longValue(),
                         (String) o[1],
                         ((Number) o[2]).longValue()
                 ))
@@ -90,7 +89,7 @@ public class AdminStatisticService {
         return orderDetailRepository.getSoldMenuByRange(start, end)
                 .stream()
                 .map(o -> new TodayMenuStatisticResponse(
-                        (BigInteger) o[0],
+                        ((Number) o[0]).longValue(),
                         (String) o[1],
                         ((Number) o[2]).longValue()
                 ))

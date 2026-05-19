@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 
 @Entity
 @Table(name = "menu_sizes")
@@ -19,7 +18,7 @@ public class MenuSize {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "menu_size_id")
-    private BigInteger menuSizeId;
+    private Long menuSizeId;
 
     @ManyToOne
     @JoinColumn(name = "menu_id")

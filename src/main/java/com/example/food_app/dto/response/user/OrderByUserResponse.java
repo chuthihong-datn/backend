@@ -6,7 +6,6 @@ import com.example.food_app.entity.enums.PaymentStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderByUserResponse {
-    private BigInteger orderId;
+    private Long orderId;
     private String address;
     private String wardName;
     private BigDecimal totalAmount;
@@ -33,7 +32,7 @@ public class OrderByUserResponse {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class OrderItemResponse {
-        private BigInteger orderDetailId;
+        private Long orderDetailId;
         private String menuName;
         private String sizeName;
         private List<String> toppings;

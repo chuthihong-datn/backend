@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Data
@@ -13,8 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class AddToCartRequest {
-    private BigInteger menuId;
-    private BigInteger menuSizeId;
+    private Long menuId;
+    private Long menuSizeId;
     private Integer quantity;
-    private List<BigInteger> toppingIds;
+    private List<Long> toppingIds;
 }

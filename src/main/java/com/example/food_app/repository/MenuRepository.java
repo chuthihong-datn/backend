@@ -6,19 +6,18 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, BigInteger> {
+public interface MenuRepository extends JpaRepository<Menu, Long> {
     List<Menu> findAllByIsActiveIsTrue();
-    List<Menu> findByCategory_CategoryIdAndIsActiveTrue(BigInteger categoryId);
-    Optional<Menu> findByMenuIdAndIsActiveTrue(BigInteger id);
+    List<Menu> findByCategory_CategoryIdAndIsActiveTrue(Long categoryId);
+    Optional<Menu> findByMenuIdAndIsActiveTrue(Long id);
     List<Menu> findByNameContainingIgnoreCaseAndIsActiveTrue(String keyword);
     @Modifying
     @Query("UPDATE Menu m SET m.isActive = :isActive WHERE m.category.categoryId = :categoryId")
-    void updateIsActiveByCategoryId(BigInteger categoryId, Boolean isActive);
+    void updateIsActiveByCategoryId(Long categoryId, Boolean isActive);
     boolean existsByNameIgnoreCase(String name);
-    boolean existsByNameIgnoreCaseAndMenuIdNot(String name, BigInteger menuId);
+    boolean existsByNameIgnoreCaseAndMenuIdNot(String name, Long menuId);
 }

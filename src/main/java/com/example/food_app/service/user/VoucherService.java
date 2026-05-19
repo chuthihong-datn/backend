@@ -44,7 +44,7 @@ public class VoucherService {
                     res.setMinOrderAmount(voucher.getMinOrderAmount());
                     res.setStartDate(voucher.getStartDate());
                     res.setEndDate(voucher.getEndDate());
-                    res.setOutOfStock(usedCount >= voucher.getUsageLimit());
+                    res.setOutOfStock(isOutOfStock(voucher, usedCount));
 
                     return res;
                 })
@@ -53,9 +53,8 @@ public class VoucherService {
 
     public Voucher1Response saveVoucher(Account account, Long voucherId) {
 
-        Voucher voucher = voucherRepository.findById(
-                java.math.BigInteger.valueOf(voucherId)
-        ).orElseThrow(() -> new RuntimeException("Voucher not found"));
+        Voucher voucher = voucherRepository.findById(voucherId)
+                .orElseThrow(() -> new RuntimeException("Voucher not found"));
 
         long usedCount = userVoucherRepository.countByVoucher(voucher);
 
@@ -64,7 +63,7 @@ public class VoucherService {
         res.setCode(voucher.getCode());
         res.setTitle(voucher.getTitle());
 
-        if (usedCount >= voucher.getUsageLimit()) {
+        if (isOutOfStock(voucher, usedCount)) {
             res.setOutOfStock(true);
             return res;
         }
@@ -81,5 +80,10 @@ public class VoucherService {
         userVoucherRepository.save(userVoucher);
         res.setOutOfStock(false);
         return res;
+    }
+
+    private boolean isOutOfStock(Voucher voucher, long usedCount) {
+        Integer usageLimit = voucher.getUsageLimit();
+        return usageLimit != null && usedCount >= usageLimit;
     }
 }

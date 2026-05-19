@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 @Entity
 @Table(
@@ -24,7 +23,7 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    private BigInteger reviewId;
+    private Long reviewId;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

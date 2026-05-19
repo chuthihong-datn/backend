@@ -6,7 +6,6 @@ import com.example.food_app.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -14,7 +13,7 @@ import java.util.List;
 public class AdminReviewService {
     private final ReviewRepository reviewRepository;
 
-    public List<ReviewResponse> getReviews(BigInteger menuId, Float rating) {
+    public List<ReviewResponse> getReviews(Long menuId, Float rating) {
 
         List<Review> reviews;
 
@@ -33,7 +32,7 @@ public class AdminReviewService {
                 .toList();
     }
 
-    public void hideReview(BigInteger reviewId) {
+    public void hideReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy review"));
 

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,7 +48,7 @@ public class AdminToppingService {
     }
 
     @Transactional
-    public ToppingResponse update(BigInteger id, ToppingRequest request) {
+    public ToppingResponse update(Long id, ToppingRequest request) {
 
         Topping topping = toppingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -98,7 +97,7 @@ public class AdminToppingService {
     }
 
     @Transactional
-    public void delete(BigInteger id) {
+    public void delete(Long id) {
 
         Topping topping = toppingRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(

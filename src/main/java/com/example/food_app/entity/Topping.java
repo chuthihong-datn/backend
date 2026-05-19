@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,7 +20,7 @@ public class Topping {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "topping_id")
-    private BigInteger toppingId;
+    private Long toppingId;
 
     private String name;
 

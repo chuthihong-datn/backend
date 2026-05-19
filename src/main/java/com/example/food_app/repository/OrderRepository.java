@@ -5,14 +5,13 @@ import com.example.food_app.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, BigInteger> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByAccountOrderByCreatedAtDesc(Account account);
-    Optional<Order> findByOrderIdAndAccount(BigInteger orderId, Account account);
+    Optional<Order> findByOrderIdAndAccount(Long orderId, Account account);
     // doanh thu theo ngày
     @Query("""
         SELECT DATE(o.createdAt), SUM(o.finalAmount), COUNT(o)

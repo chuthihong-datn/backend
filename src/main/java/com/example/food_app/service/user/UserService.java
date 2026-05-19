@@ -18,7 +18,6 @@ import com.cloudinary.utils.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +172,7 @@ public class UserService {
     }
 
     public OrderByUserResponse getMyOrderDetail(
-            BigInteger orderId,
+            Long orderId,
             Account account
     ) {
 

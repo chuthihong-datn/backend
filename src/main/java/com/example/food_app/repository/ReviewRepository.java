@@ -3,18 +3,17 @@ package com.example.food_app.repository;
 import com.example.food_app.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.math.BigInteger;
 import java.util.List;
 
-public interface ReviewRepository extends JpaRepository<Review, BigInteger> {
-    List<Review> findByMenu_MenuId(BigInteger menuId);
-    List<Review> findByMenu_MenuIdIn(List<BigInteger> menuIds);
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+    List<Review> findByMenu_MenuId(Long menuId);
+    List<Review> findByMenu_MenuIdIn(List<Long> menuIds);
     boolean existsByAccountAndOrderAndMenu(
             Account account,
             Order order,
             Menu menu
     );
-    List<Review> findByMenu_MenuIdAndRating(BigInteger menuId, Float rating);
+    List<Review> findByMenu_MenuIdAndRating(Long menuId, Float rating);
     List<Review> findByRating(Float rating);
     long countByAccountAndOrder(
             Account account,

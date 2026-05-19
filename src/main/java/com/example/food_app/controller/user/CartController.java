@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigInteger;
 
 @RestController
 @RequestMapping("/cart")
@@ -37,7 +36,7 @@ public class CartController {
     @PutMapping("/items/{itemId}")
     public ResponseEntity<?> updateQuantity(
             @AuthenticationPrincipal Account account,
-            @PathVariable BigInteger itemId,
+            @PathVariable Long itemId,
             @RequestBody UpdateCartItemRequest request
     ) {
         cartService.updateQuantity(account, itemId, request.getQuantity());
@@ -47,7 +46,7 @@ public class CartController {
     @DeleteMapping("/items/{itemId}")
     public ResponseEntity<?> deleteItem(
             @AuthenticationPrincipal Account account,
-            @PathVariable BigInteger itemId
+            @PathVariable Long itemId
     ) {
         cartService.deleteCartItem(account, itemId);
         return ResponseEntity.ok(cartService.getCart(account));
