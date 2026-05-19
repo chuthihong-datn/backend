@@ -78,6 +78,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/menus")
                 || path.startsWith("/categories")
                 || path.startsWith("/payment/vnpay-return")
-                || path.startsWith("/payment/vnpay-ipn");
+                || path.startsWith("/payment/vnpay-ipn")
+                || path.startsWith("/ws");
     }
 }

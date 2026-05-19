@@ -27,7 +27,9 @@ public class SecurityConfig {
                                 "/wards/delivery",
                                 "/payment/**",
                                 "/voucher",
-                                "/chat"
+                                "/chat",
+                                "/realtime-chat/**",
+                                "/ws/**"
                         ).permitAll()
 
                         // api chỉ dành cho khách hàng
